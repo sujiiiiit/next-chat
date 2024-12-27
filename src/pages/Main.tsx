@@ -38,9 +38,9 @@ const Main: React.FC = () => {
     };
   }, []);
 
-  const toggleSearch = () => {
-    setSearchIsOpen((prevState) => !prevState);
-  };
+  // const toggleSearch = () => {
+  //   setSearchIsOpen((prevState) => !prevState);
+  // };
 
   const closeSearch = () => {
     setSearchIsOpen(false);

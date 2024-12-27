@@ -224,10 +224,45 @@ class GradientRenderer {
     const position = this.curPosition(this._phase, this._tail);
     this.drawGradient(position);
   }
+  private getPositions(shift: number) {
+    const positions = this._positions.slice();
+    positions.push(...positions.splice(0, shift));
 
-  private curPosition(phase: number, tail: number): Point[] {
-    // Position calculation logic...
-    return [];
+    const result: typeof positions = [];
+    for(let i = 0; i < positions.length; i += 2) {
+      result.push(positions[i]);
+    }
+    return result;
+  }
+  private getNextPositions(phase: number, curveMax: number, curve: number[]) {
+    const pos = this.getPositions(phase);
+    if(!curve[0] && curve.length === 1) {
+      return [pos];
+    }
+
+    const nextPos = this.getPositions(++phase % this._phases);
+    const distances = nextPos.map((nextPos, idx) => {
+      return {
+        x: (nextPos.x - pos[idx].x) / curveMax,
+        y: (nextPos.y - pos[idx].y) / curveMax
+      };
+    });
+
+    const positions = curve.map((value) => {
+      return distances.map((distance: { x: number; y: number }, idx) => {
+        return {
+          x: pos[idx].x + distance.x * value,
+          y: pos[idx].y + distance.y * value
+        };
+      });
+    });
+
+    return positions;
+  }
+
+  private curPosition(phase: number, tail: number) {
+    const positions = this.getNextPositions(phase, this._tails, [tail]);
+    return positions[0];
   }
 }
 
