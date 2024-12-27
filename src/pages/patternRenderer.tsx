@@ -1,7 +1,6 @@
 import indexOfAndSplice from "@/lib/indexOfAndSplice";
 import deepEqual from "@/lib/deepEqual";
 import { renderImageFromUrlPromise } from "@/lib/renderImageFromUrl";
-import mediaSizes, { ScreenSize } from "@/lib/mediaSizes";
 import IS_IMAGE_BITMAP_SUPPORTED from "@/lib/imageBitmapSupport";
 import windowSize from "@/lib/windowSize";
 import React, { useRef } from "react";
@@ -26,11 +25,9 @@ type Props = {
   options: ChatBackgroundPatternRendererInitOptions;
 };
 
-const SCALE_PATTERN = false;
 const USE_BITMAP = IS_IMAGE_BITMAP_SUPPORTED;
 
 function ChatBackgroundPatternRendererComponent({ canvasRef, options }: Props) {
-  const [imageLoaded, setImageLoaded] = React.useState(false);
 
   class ChatBackgroundPatternRenderer {
     private static INSTANCES: ChatBackgroundPatternRenderer[] = [];
@@ -74,9 +71,7 @@ function ChatBackgroundPatternRendererComponent({ canvasRef, options }: Props) {
       const img = (this.image = document.createElement("img"));
       img.crossOrigin = "anonymous";
 
-      img.onload = () => {
-        setImageLoaded(true); // Mark the image as loaded when it's ready
-      };
+
 
       return (this.renderImagePromise = renderImageFromUrlPromise(
         img,
