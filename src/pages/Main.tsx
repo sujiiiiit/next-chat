@@ -12,11 +12,42 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icon";
 import GradientCanvas from "@/pages/GradientCanvas";
-import SVGToCanvas from "@/pages/patternRenderer";
+import dynamic from "next/dynamic";
+import SVG from "@/pages/svg";
+import { Button } from "@/components/ui/button";
+
+const SVGToCanvas = dynamic(() => import("@/pages/patternRenderer"), {
+  ssr: false,
+});
 
 const Main: React.FC = () => {
   const [searchIsOpen, setSearchIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const [state, setState] = useState("empty");
+
+  useEffect(() => {
+    const handleInput = () => {
+      if (contentEditableRef.current) {
+        setState(
+          contentEditableRef.current.textContent?.trim() ? "full" : "empty"
+        );
+      }
+    };
+
+    const contentEditable = contentEditableRef.current;
+    if (contentEditable) {
+      contentEditable.addEventListener("input", handleInput);
+    }
+
+    return () => {
+      if (contentEditable) {
+        contentEditable.removeEventListener("input", handleInput);
+      }
+    };
+  }, []);
 
   const isDark = theme === "dark";
 
@@ -38,9 +69,11 @@ const Main: React.FC = () => {
     };
   }, []);
 
-  // const toggleSearch = () => {
-  //   setSearchIsOpen((prevState) => !prevState);
-  // };
+
+
+
+
+
 
   const closeSearch = () => {
     setSearchIsOpen(false);
@@ -50,19 +83,26 @@ const Main: React.FC = () => {
     setSearchIsOpen(true);
   };
 
+  const clearInput = () => {
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  };
+
   const svgClassName = useMemo(
     () => `absolute z-[3] ${isDark ? "" : "mix-blend-soft-light opacity-50"}`,
     [theme]
   );
 
   return (
-    <div className="w-dvw h-dvh flex">
+    <div className="w-dvw h-dvh flex overflow-hidden">
+      <SVG />
       <div
         id="col-left"
-        className="sm:flex-2 w-full max-w-full sm:max-w-[420px] border-r bg-backgeound2"
+        className="sm:flex-2 w-0 max-w-full sm:max-w-[420px] border-r border-background bg-backgeound2 overflow-hidden"
       >
         <div className="h-dvh flex flex-col min-w-full w-full grid-cols-1 grid-rows-1">
-          {/* sidebar header  */}
+          {/* Sidebar header */}
           <div
             id="sidebar-header"
             className="w-full bg-background3 flex px-4 items-center h-[3.5rem] flex-none select-none cursor-default"
@@ -79,6 +119,7 @@ const Main: React.FC = () => {
                     <Icon
                       variant={"transparent"}
                       i="savedmessages"
+                      c="drp-icons"
                       className="text-black text-lg"
                     />
                     <span className="pr-4">Saved Messages</span>
@@ -87,6 +128,7 @@ const Main: React.FC = () => {
                     <Icon
                       variant={"transparent"}
                       i="archive"
+                      c="drp-icons"
                       className="text-black text-xl"
                     />
                     <span className="pr-4">Archives</span>
@@ -95,6 +137,7 @@ const Main: React.FC = () => {
                     <Icon
                       variant={"transparent"}
                       i="stories"
+                      c="drp-icons"
                       className="text-black text-xl"
                     />
                     My Stories
@@ -103,6 +146,7 @@ const Main: React.FC = () => {
                     <Icon
                       variant={"transparent"}
                       i="newprivate"
+                      c="drp-icons"
                       className="text-black text-xl"
                     />
                     Contacts
@@ -111,6 +155,7 @@ const Main: React.FC = () => {
                     <Icon
                       variant={"transparent"}
                       i="settings"
+                      c="drp-icons"
                       className="text-black text-xl"
                     />
                     Settings
@@ -121,6 +166,7 @@ const Main: React.FC = () => {
                     <Icon
                       variant={"transparent"}
                       i="darkmode"
+                      c="drp-icons"
                       className="text-black text-xl"
                     />
                     {isDark ? "Light Mode" : "Dark Mode"}
@@ -129,17 +175,19 @@ const Main: React.FC = () => {
               </DropdownMenu>
             )}
 
-            <div className="relative outline-0 w-full border-2 h-[42px] rounded-full flex items-center mx-2 transition-all duration-200 ease-in-out group  focus-within:border-primaryColor box-border bg-[var(--background2)]   focus-within:bg-background3 group ">
+            <div className="relative outline-0 w-full border-2 h-[42px] rounded-full flex items-center mx-2 transition-all duration-200 ease-in-out group focus-within:border-primaryColor box-border bg-[var(--background2)] focus-within:bg-background3 group">
               <input
                 type="text"
                 className="w-full bg-transparent z-[2] h-full rounded-full px-[calc(42px_+_3px_+_1px)] border-0 outline-0 transition-all duration-100 ease-in-out placeholder:text-text2 placeholder:font-medium"
                 placeholder="Search"
                 onFocus={openSearch}
+                ref={inputRef}
               />
               <Icon
                 variant={"transparent"}
                 i="search"
-                className="absolute left-1 transition-all duration-200 ease-in-out group-focus-within:text-primaryColor "
+                c="text-text2 group-focus-within:text-primaryColor"
+                className="absolute group left-1 transition-all duration-200 ease-in-out group-focus-within:text-primaryColor"
               />
               <IconB
                 variant={"transparent"}
@@ -147,6 +195,7 @@ const Main: React.FC = () => {
                 className={`absolute right-1 transition-all duration-200 ease-in-out ${
                   searchIsOpen ? "flex" : "hidden"
                 } group-focus-within:text-primaryColor z-[3]`}
+                onClick={clearInput}
               />
             </div>
           </div>
@@ -159,6 +208,9 @@ const Main: React.FC = () => {
               } transition-item relative max-h-full top-0 left-0 w-full h-full [animation-fill-mode:forwards!important] bg-background3 z-[2]`}
             >
               My name is Manas
+              <Button>
+                message manas
+              </Button>
             </div>
             <div
               className={`${
@@ -197,6 +249,90 @@ const Main: React.FC = () => {
             mask={isDark}
             className={svgClassName}
           />
+        </div>
+        <div className="w-full relative h-14 bg-background3 z-[4]"></div>
+        <div className="w-full flex-1 relative z-[4]"></div>
+        {/* Last Section */}
+        <div className="flex justify-center w-full max-w-full flex-col flex-none relative pt-1 z-[3]">
+          <div className="flex m-auto w-full xl:w-[calc(100%_-_25dvw)] pb-2 sm:pb-5 px-3 max-w-[var(--chat-input-max-width)]">
+            <div className="flex w-full gap-1">
+              <div className="flex flex-col w-[calc(100%_-_(3.357rem_+_0.5rem))] max-w-[calc(100%_-_3.357rem_+_0.5rem)] justify-center rounded-[1rem] min-h-[2.875rem]  sm:min-h-[3.375rem] max-h-[30rem] flex-none relative z-[3] before:content-[''] before:absolute before:inset-0 before:rounded-[1rem] before:rounded-br-none before:shadow-[0_1px_8px_1px_#0000001f] before:bg-background3 before:opacity-100 ">
+                <svg
+                  viewBox="0 0 11 20"
+                  width="11"
+                  height="20"
+                  className="absolute bottom-[-1px] right-[-8.4px] w-[11px] h-[20px] fill-background3 [transform:scaleX(calc(1_*_-1))]"
+                >
+                  <use href="#message-tail-filled"></use>
+                </svg>
+
+                <div
+                  className="reply-wrapper transition-all duration-150 ease-out justify-start h-0 w-full pt-[0.5625rem] px-2 mb-[-0.5625rem] items-center select-none z-3 opacity-0 pointer-events-none data-[state=active]:pointer-events-auto data-[state=active]:h-[45px] data-[state=active]:opacity-100 rounded-[1rem] bg-background3 relative flex "
+                  // data-state={"active"}
+                ></div>
+                <div className="message-cont py-[0.3125rem] px-2 min-h-[2.875rem]  sm:min-h-[3.375rem] rounded-[1rem] flex justify-between items-center">
+                  <IconB
+                    variant={"ghost"}
+                    i="smile"
+                    size={"sm"}
+                    className="mx-[0.12rem]"
+                  />
+                  <div className=" px-2 flex items-center w-[1%] flex-1 relative overflow-hidden self-center">
+                    <div
+                      className="w-full p-[0.5rem_0] overflow-y-auto resize-none border-none outline-none text-base transition-duration-[0ms] h-[37px] transition-[height_0.1s]  overflow-y-overlay scrollbar-thin relative max-h-[27.5rem]!important leading-[1.37rem] [scrollbar-width:none!important]
+"
+                      ref={contentEditableRef}
+                      contentEditable="true"
+                    ></div>
+                    <span
+                      className="text-[#a2acb4] block pointer-events-none absolute opacity-0 max-w-full pr-[0.5rem] left-[var(--padding-horizontal)] z-1 whitespace-nowrap overflow-ellipsis overflow-hidden transition-all data-[state=empty]:opacity-100 duration-150 ease-in-out transform data-[state=empty]:translate-x-0 data-[state=empty]:translate-y-0  translate-x-[calc(1rem_*_1)] translate-y-0"
+                      data-state={state}
+                    >
+                      Message
+                    </span>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="outline-0" asChild>
+                      <IconB
+                        variant={"ghost"}
+                        i="attach"
+                        size={"sm"}
+                        className="mx-[0.12rem]"
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={15}>
+                      <DropdownMenuItem>
+                        <Icon
+                          variant={"transparent"}
+                          i="image"
+                          c="drp-icons"
+                          className="text-black text-lg"
+                        />
+                        <span className="pr-4">Photos or Videos</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Icon
+                          variant={"transparent"}
+                          i="document"
+                          c="drp-icons"
+                          className="text-black text-lg"
+                        />
+                        <span className="pr-4">Document</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+              <div className="flex">
+                <IconB
+                  variant={"default"}
+                  i="send2"
+                  size={"lg"}
+                  className="mx-[0.12rem]"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -45,7 +45,7 @@ const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
                 ref={ref}
                 {...props}
             >
-                {i && <span className={cn(`tgico-${i}  text-icon2 ${c}`)}></span>}
+                {i && <span className={cn(`tgico-${i}  ${c}`)}></span>}
             </Comp>
         );
     }

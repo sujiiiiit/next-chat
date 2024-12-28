@@ -16,7 +16,7 @@ body {
     --background: 0 0% 100%;
     --background2: rgb(255, 255, 255);
     --background3: var(--background2);
-    --dropdown: rgb(255, 255, 255, 0.15);
+    --dropdown: rgb(255, 255, 255, 0.78);
     --hover: rgba(112, 117, 121, 0.08);
     --text-primary: #000;
     --text-secondary: #707579;
@@ -49,6 +49,10 @@ body {
     /* transitions  */
     --layer-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --tabs-transition: 0.2s ease-in-out;
+
+    /* message input  */
+    --msg-height: 2.875rem;
+    --chat-input-max-width: 728px;
   }
   .dark {
     --icon: 0, 0%, 67%;
@@ -57,7 +61,7 @@ body {
     --background: 240 10% 3.9%;
     --background2: rgb(24, 24, 24);
     --background3: rgb(33, 33, 33);
-    --dropdown: rgb(33, 33, 33, 0.1);
+    --dropdown: rgb(33, 33, 33, 0.5);
     --text-primary: #ffffff;
     --text-secondary: #aaaaaa;
     --foreground: 0 0% 98%;
@@ -93,7 +97,11 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .drp-icons {
+    @apply text-2xl sm:text-lg text-text2 sm:text-icon2;
+  }
 }
+
 @import url("./icon.css");
 
 .transitions > .transition-item:not(.active) {
@@ -262,5 +270,18 @@ body {
 
   to {
     opacity: 0;
+  }
+}
+
+input,
+[contenteditable="true"] {
+  caret-color: var(--primary-color);
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --msg-height: 3.375rem;
   }
 }

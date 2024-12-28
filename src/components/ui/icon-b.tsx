@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-white",
+        default: "bg-primaryColor text-white",
         ghost: "bg-transparent hover:bg-accent hover:text-accent-foreground",
         transparent: "bg-transparent",
         outline:
@@ -18,7 +18,7 @@ const buttonVariants = cva(
       size: {
         default: "p-2",
         sm: "w-9 h-9",
-        lg: "w-14 h-14",
+        lg: "w-[var(--msg-height)] h-[var(--msg-height)]",
       },
     },
     defaultVariants: {
@@ -45,7 +45,7 @@ const IconB = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {i && <span className={`tgico-${i} ${c}`}></span>}
+        {i && <span className={`tgico-${i} ${c} `}></span>}
       </Comp>
     );
   }

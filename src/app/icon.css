@@ -261,7 +261,7 @@
 }
 
 .tgico-document:before {
-  content: "\e94a";
+  content: "\e94c";
 }
 
 .tgico-down:before {
@@ -389,7 +389,7 @@
 }
 
 .tgico-image:before {
-  content: "\e917";
+  content: "\e972";
 }
 
 .tgico-info:before {

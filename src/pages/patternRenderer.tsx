@@ -150,7 +150,7 @@ function ChatBackgroundPatternRendererComponent({ canvasRef, options }: Props) {
       }
 
       if (this.config.mask) {
-        if (context) context.globalAlpha = 0.3;
+        if (context) context.globalAlpha = 0.5;
       } else {
         if (context) context.globalAlpha = 1.0;
       }

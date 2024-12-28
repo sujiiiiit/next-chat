@@ -46,6 +46,7 @@ export default {
         hover: "var(--hover)",
         text1:"var(--text-primary)",
         text2:"var(--text-secondary)",
+        msgheight: "var(--msg-height)",
         foreground: "hsl(var(--foreground))",
         card: {
           DEFAULT: "hsl(var(--card))",
