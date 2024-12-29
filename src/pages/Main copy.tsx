@@ -20,7 +20,6 @@ import { useMediaQuery } from "@custom-react-hooks/use-media-query";
 import dynamic from "next/dynamic";
 import SVG from "@/pages/svg";
 import { Input } from "@/components/ui/input";
-import { useSelectionPosition } from "@/hooks/useMarkupPosition";
 
 const SVGToCanvas = dynamic(() => import("@/pages/patternRenderer"), {
   ssr: false,
@@ -38,13 +37,11 @@ const Main: React.FC = () => {
   const { searchIsOpen, openSearch, closeSearch } = useSearch();
   const { linkContent, handleInputChange, isLink, toggleMarkupLink } =
     useInputHandler();
-  const { selectionRef,markupContainerRef, selectionPosition } = useSelectionPosition();
   const { state: dataState, toggleState: toggleDataState } =
     useToggleState("leftOpen");
   const inbtw = useMediaQuery(
     "only screen and (min-width : 640px) and (max-width : 1024px)"
   );
-  
 
   const isMobile = useMediaQuery("only screen and (max-width : 640px)");
 
@@ -231,7 +228,7 @@ const Main: React.FC = () => {
         <div className="flex justify-center w-full max-w-full flex-col flex-none relative pt-1 z-[3]">
           <div className="flex m-auto w-full xl:w-[calc(100%_-_25dvw)] pb-2 sm:pb-5 px-2 sm:px-3 max-w-[var(--chat-input-max-width)]">
             <div className="flex w-full gap-1">
-              <div className="flex flex-col w-[calc(100%_-_(3.357rem_+_0.5rem))] max-w-[calc(100%_-_3.357rem_+_0.5rem)] justify-center rounded-[1rem] min-h-[2.875rem]  sm:min-h-[3.375rem] max-h-[30rem] flex-none relative z-[3] before:content-[''] before:absolute before:inset-0 before:rounded-[1rem] before:rounded-br-none before:shadow-[0_1px_8px_1px_#0000001f] before:bg-background3 before:opacity-100 " ref={selectionRef}>
+              <div className="flex flex-col w-[calc(100%_-_(3.357rem_+_0.5rem))] max-w-[calc(100%_-_3.357rem_+_0.5rem)] justify-center rounded-[1rem] min-h-[2.875rem]  sm:min-h-[3.375rem] max-h-[30rem] flex-none relative z-[3] before:content-[''] before:absolute before:inset-0 before:rounded-[1rem] before:rounded-br-none before:shadow-[0_1px_8px_1px_#0000001f] before:bg-background3 before:opacity-100 ">
                 <svg
                   viewBox="0 0 11 20"
                   width="11"
@@ -325,9 +322,8 @@ const Main: React.FC = () => {
         } data-[state=active]:opacity-100 overflow-hidden z-[5] flex justify-start  layer-transition`}
         style={{
           maxWidth: "519.6px",
-          transform: `translate3d(${selectionPosition?.left}px, ${selectionPosition?.top}px, 0px)`,
+          transform: "translate3d(8px, 602.3px, 0px)",
         }}
-        ref={markupContainerRef}
         data-state="active" // Both states can be here
       >
         <div className="markup-wrapper h-[44px] absolute left-0 top-0 flex items-center justify-start w-[702px]   layer-transition max-w-full">

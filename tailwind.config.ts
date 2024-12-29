@@ -8,6 +8,7 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    
     extend: {
       transitionTimingFunction: {
         layer: "cubic-bezier(0.4, 0, 0.2, 1)",

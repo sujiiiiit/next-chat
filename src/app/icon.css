@@ -312,8 +312,8 @@
   content: "\e95c";
 }
 
-.tgico-wallet:before{
-  content: ""
+.tgico-wallet:before {
+  content: "";
 }
 
 .tgico-fast_rewind:before {
@@ -490,6 +490,12 @@
 
 .tgico-mediaspoiler:before {
   content: "\e98d";
+}
+.tgico-quote_outline:before {
+  content: "\e9da";
+}
+.tgico-spoiler:before {
+  content: "\e9fe";
 }
 
 .tgico-mediaspoileroff:before {
@@ -796,7 +802,7 @@
 }
 
 .tgico-strikethrough:before {
-  content: "\e91b";
+  content: "\ea09";
 }
 
 .tgico-textedit:before {
@@ -824,7 +830,7 @@
 }
 
 .tgico-underline:before {
-  content: "\e91b";
+  content: "\ea17";
 }
 
 .tgico-unmute:before {
