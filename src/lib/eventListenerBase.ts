@@ -5,8 +5,9 @@ export type EventListenerListeners = Record<string, (...args: unknown[]) => unkn
 type ListenerObject<T> = { callback: T; options: boolean | AddEventListenerOptions | undefined };
 
 export default class EventListenerBase<Listeners extends EventListenerListeners> {
+  
   protected listeners!: Partial<{
-    [k in keyof Listeners]: Set<ListenerObject<Listeners[k]>>;
+    [k in keyof Listeners]?: Set<ListenerObject<Listeners[k]>>;
   }>;
   protected listenerResults!: Partial<{
     [k in keyof Listeners]: ArgumentTypes<Listeners[k]>;

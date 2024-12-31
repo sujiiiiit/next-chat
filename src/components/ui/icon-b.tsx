@@ -19,6 +19,9 @@ const buttonVariants = cva(
         default: "p-2",
         sm: "w-9 h-9",
         lg: "w-[var(--msg-height)] h-[var(--msg-height)]",
+        emoji:
+          "w-[1.875rem] h-[1.875rem p-0 px-0 bg-transparent hover:bg-transparent",
+        customemoji: "w-[2.375rem] h-[2.375rem p-1 !rounded-[0.25rem]",
       },
     },
     defaultVariants: {
@@ -41,7 +44,10 @@ const IconB = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          "layer-transition"
+        )}
         ref={ref}
         {...props}
       >

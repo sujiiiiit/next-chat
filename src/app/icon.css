@@ -1,7 +1,7 @@
 @font-face {
   font-family: tgico;
-  src: url(/tgico.ttf?nsmda7) format("truetype"),
-    url(/tgico.svg?nsmda7#tgico) format("svg");
+  src: url(/assets/font/tgico.ttf) format("truetype"),
+    url(/assets/font/tgico.svg?#tgico) format("svg");
 
   font-weight: 400;
   font-style: normal;
@@ -44,9 +44,12 @@
 .tgico-checks:before {
   content: "\e901";
 }
+.tgico-collapse:before {
+  content: "\e93c";
+}
 
 .tgico-activesessions:before {
-  content: "\e902";
+  content: "\e93c";
 }
 
 .tgico-add:before {
@@ -287,6 +290,9 @@
 .tgico-edit:before {
   content: "\e952";
 }
+.tgico-apple:before {
+  content: "\e951";
+}
 
 .tgico-email:before {
   content: "\e953";
@@ -496,6 +502,9 @@
 }
 .tgico-spoiler:before {
   content: "\e9fe";
+}
+.tgico-football:before {
+  content: "\e9ff";
 }
 
 .tgico-mediaspoileroff:before {
@@ -775,10 +784,6 @@
 
 .tgico-smile:before {
   content: "\e9f9";
-}
-
-.tgico-spoiler:before {
-  content: "\e9fa";
 }
 
 .tgico-sport:before {

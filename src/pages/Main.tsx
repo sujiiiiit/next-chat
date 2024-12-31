@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
-import { useThemeHandler } from "@/hooks/useThemeHandler";
+import React, { useState } from "react";
+import { useTheme } from "next-themes";
+import { useMemo } from "react";
 import { useWindowDimensions } from "@/hooks/useWindowDimensions";
 import { useContentEditable } from "@/hooks/useContentEditable";
 import { useSearch, useClearSearch, useSearchInput } from "@/hooks/useSearch";
-import { useInputHandler } from "@/hooks/useInputHandler";
 import { useToggleState } from "@/hooks/useToggleState";
 import { IconB } from "@/components/ui/icon-b";
 import {
@@ -19,8 +19,11 @@ import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@custom-react-hooks/use-media-query";
 import dynamic from "next/dynamic";
 import SVG from "@/pages/svg";
-import { Input } from "@/components/ui/input";
-import { useSelectionPosition } from "@/hooks/useMarkupPosition";
+import {
+  useSelectionPosition,
+  useInputHandler,
+} from "@/hooks/useMarkupPosition";
+import MarkupContainer from "./markup";
 
 const SVGToCanvas = dynamic(() => import("@/pages/patternRenderer"), {
   ssr: false,
@@ -28,9 +31,19 @@ const SVGToCanvas = dynamic(() => import("@/pages/patternRenderer"), {
 const GradientCanvas = dynamic(() => import("@/pages/GradientCanvas"), {
   ssr: false,
 });
+const Emoji = dynamic(() => import("@/pages/emoji"), {
+  ssr: false,
+});
 
 const Main: React.FC = () => {
-  const { isDark, svgClassName, toggleTheme } = useThemeHandler();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
+  const svgClassName = useMemo(
+    () => `absolute z-[3] ${isDark ? "" : "mix-blend-soft-light opacity-50"}`,
+    [theme]
+  );
+
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const { colRightRef, dimensions } = useWindowDimensions();
   const { contentEditableRef, hasContent } = useContentEditable();
   const { inputRef, clearInput } = useClearSearch();
@@ -38,15 +51,31 @@ const Main: React.FC = () => {
   const { searchIsOpen, openSearch, closeSearch } = useSearch();
   const { linkContent, handleInputChange, isLink, toggleMarkupLink } =
     useInputHandler();
-  const { selectionRef,markupContainerRef, selectionPosition } = useSelectionPosition();
+  const { selectionRef, markupContainerRef, selectionPosition, isSelected } =
+    useSelectionPosition();
   const { state: dataState, toggleState: toggleDataState } =
-    useToggleState("leftOpen");
+    useToggleState("no");
+  // const { state: dataState, toggleState: toggleDataState } =
+  //   useToggleState("leftOpen");
   const inbtw = useMediaQuery(
     "only screen and (min-width : 640px) and (max-width : 1024px)"
   );
-  
 
   const isMobile = useMediaQuery("only screen and (max-width : 640px)");
+  const [isHeightChanged, setIsHeightChanged] = useState(false);
+
+  const adjustHeight = () => {
+    if (contentEditableRef.current) {
+      const content = contentEditableRef.current;
+      content.style.height = "auto";
+      const newHeight = content.scrollHeight;
+      const maxHeight = 27 * 16; // Assuming 1rem = 16px
+      const clampedHeight = Math.min(Math.max(newHeight, 37), maxHeight);
+      content.style.height = `${clampedHeight}px`;
+      console.log(clampedHeight);
+      setIsHeightChanged(clampedHeight >= 40);
+    }
+  };
 
   return (
     <div className="w-dvw h-[calc(var(--vh,1vh)*100)] flex overflow-hidden relative">
@@ -214,7 +243,7 @@ const Main: React.FC = () => {
           />
 
           <SVGToCanvas
-            url={"/pattern.svg"}
+            url={"/assets/bg/pattern.svg"}
             width={dimensions.width}
             height={dimensions.height}
             mask={isDark}
@@ -228,10 +257,13 @@ const Main: React.FC = () => {
         </div>
         <div className="w-full flex-1 relative z-[4]"></div>
         {/* Last Section */}
-        <div className="flex justify-center w-full max-w-full flex-col flex-none relative pt-1 z-[3]">
-          <div className="flex m-auto w-full xl:w-[calc(100%_-_25dvw)] pb-2 sm:pb-5 px-2 sm:px-3 max-w-[var(--chat-input-max-width)]">
-            <div className="flex w-full gap-1">
-              <div className="flex flex-col w-[calc(100%_-_(3.357rem_+_0.5rem))] max-w-[calc(100%_-_3.357rem_+_0.5rem)] justify-center rounded-[1rem] min-h-[2.875rem]  sm:min-h-[3.375rem] max-h-[30rem] flex-none relative z-[3] before:content-[''] before:absolute before:inset-0 before:rounded-[1rem] before:rounded-br-none before:shadow-[0_1px_8px_1px_#0000001f] before:bg-background3 before:opacity-100 " ref={selectionRef}>
+        <div className="flex justify-center w-full max-w-full flex-col flex-none relative pt-1 z-[4]">
+          <div className="flex m-auto w-full xl:w-[calc(100%_-_25dvw)] pb-2 sm:pb-5 px-2 sm:px-3 max-w-[var(--chat-input-max-width)] ">
+            <div className="flex w-full gap-1 items-end">
+              <div
+                className="flex flex-col w-[calc(100%_-_(3.357rem_+_0.5rem))] max-w-[calc(100%_-_3.357rem_+_0.5rem)] justify-center rounded-[1rem] min-h-[2.875rem]  sm:min-h-[3.375rem] max-h-[30rem] flex-none relative z-[3] before:content-[''] before:absolute before:inset-0 before:rounded-[1rem] before:rounded-br-none before:shadow-[0_1px_8px_1px_#0000001f] before:bg-background3 before:opacity-100 transition-all duration-150 ease-in-out"
+                ref={selectionRef}
+              >
                 <svg
                   viewBox="0 0 11 20"
                   width="11"
@@ -245,28 +277,27 @@ const Main: React.FC = () => {
                   className="reply-wrapper transition-all duration-150 ease-out justify-start h-0 w-full pt-[0.5625rem] px-2 mb-[-0.5625rem] items-center select-none z-3 opacity-0 pointer-events-none data-[state=active]:pointer-events-auto data-[state=active]:h-[45px] data-[state=active]:opacity-100 rounded-[1rem] bg-background3 relative flex "
                   // data-state={"active"}
                 ></div>
-                <div className="message-cont py-[0.3125rem] px-2 min-h-[2.875rem]  sm:min-h-[3.375rem] rounded-[1rem] flex justify-between items-center">
+                <div
+                  className="message-cont py-[0.3125rem] px-2 min-h-[2.875rem]  sm:min-h-[3.375rem] rounded-[1rem] flex justify-between items-center data-[state=true]:items-end transition-all"
+                  data-state={isHeightChanged}
+                >
                   <IconB
                     variant={"ghost"}
                     i="smile"
                     size={"sm"}
-                    className="mx-[0.12rem]"
+                    className="mx-[0.12rem] data-[state=true]:mb-1"
+                    data-state={isHeightChanged}
                   />
+
                   <div className=" px-2 flex items-center w-[1%] flex-1 relative overflow-hidden self-center">
                     <div
                       id="input-message-container"
-                      className="w-full p-[0.5rem_0] overflow-y-auto resize-none border-none outline-none text-base transition-duration-[0ms] h-[37px] transition-[height_0.1s]  overflow-y-overlay scrollbar-thin relative max-h-[27.5rem]!important leading-[1.37rem] [scrollbar-width:none!important]
-"
+                      className="w-full p-[0.5rem_0] overflow-y-auto resize-none border-none outline-none text-base transition-duration-[0ms] h-[37px] transition-all duration-200 ease-in-out  overflow-y-overlay scrollbar-thin relative max-h-[27.5rem]!important leading-[1.37rem] [scrollbar-width:none!important] "
                       ref={contentEditableRef}
                       contentEditable="true"
-                    >
-                      {/* <Image
-                        alt="smiling"
-                        src="/1f600.png"
-                        width={18}
-                        height={18}
-                      /> */}
-                    </div>
+                      style={{ height: `37px` }}
+                      onInput={adjustHeight}
+                    ></div>
                     <span
                       className="text-[#a2acb4] block pointer-events-none absolute opacity-0 max-w-full pr-[0.5rem] left-[var(--padding-horizontal)] z-1 whitespace-nowrap overflow-ellipsis overflow-hidden transition-all data-[state=empty]:opacity-100 duration-150 ease-in-out transform data-[state=empty]:translate-x-0 data-[state=empty]:translate-y-0  translate-x-[calc(1rem_*_1)] translate-y-0"
                       data-state={hasContent ? "full" : "empty"}
@@ -280,7 +311,8 @@ const Main: React.FC = () => {
                         variant={"ghost"}
                         i="attach"
                         size={"sm"}
-                        className="mx-[0.12rem]"
+                        className="mx-[0.12rem] data-[state=true]:mb-1"
+                        data-state={isHeightChanged}
                       />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={15}>
@@ -316,105 +348,19 @@ const Main: React.FC = () => {
               </div>
             </div>
           </div>
+          <Emoji />
         </div>
+        
       </div>
-      <div
-        id="markup-tooltip"
-        className={`bg-background3 rounded-[10px] shadow-[0_2px_2px_#00000024,0_3px_1px_-2px_#0000001f,0_1px_5px_#0003] translate-z-0 opacity-0 fixed inset-0 h-[44px] ${
-          isLink ? "w-[420px]" : "w-[282px]"
-        } data-[state=active]:opacity-100 overflow-hidden z-[5] flex justify-start  layer-transition`}
-        style={{
-          maxWidth: "519.6px",
-          transform: `translate3d(${selectionPosition?.left}px, ${selectionPosition?.top}px, 0px)`,
-        }}
+      <MarkupContainer
+        isSelected={isSelected}
+        selectionPosition={selectionPosition}
+        isLink={isLink}
+        linkContent={linkContent}
+        toggleMarkupLink={toggleMarkupLink}
+        handleInputChange={handleInputChange}
         ref={markupContainerRef}
-        data-state="active" // Both states can be here
-      >
-        <div className="markup-wrapper h-[44px] absolute left-0 top-0 flex items-center justify-start w-[702px]   layer-transition max-w-full">
-          <div
-            className={`flex items-center h-[44px] justify-between p-[7px] flex-none max-w-full w-[282px] layer-transition ${
-              isLink ? "-translate-x-[282px]" : ""
-            }`}
-          >
-            <IconB
-              variant={"ghost"}
-              i="bold"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <IconB
-              variant={"ghost"}
-              i="italic"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <IconB
-              variant={"ghost"}
-              i="underline"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <IconB
-              variant={"ghost"}
-              i="strikethrough"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <IconB
-              variant={"ghost"}
-              i="monospace"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <IconB
-              variant={"ghost"}
-              i="mediaspoiler"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <IconB
-              variant={"ghost"}
-              i="quote_outline"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-            <span className="h-6 w-[1px] border-r"></span>
-            <IconB
-              variant={"ghost"}
-              i="link"
-              className="rounded-[8px] p-0 w-7 h-7"
-              onClick={toggleMarkupLink}
-            />
-          </div>
-          <div
-            className={`flex items-center h-[44px] justify-between p-[7px] flex-none max-w-full w-[420px] ${
-              isLink ? "-translate-x-[282px]" : "translate-x-0"
-            } layer-transition`}
-          >
-            <IconB
-              variant={"ghost"}
-              i="previous"
-              className="rounded-[8px] p-0 w-7 h-7"
-              onClick={toggleMarkupLink}
-            />
-            <span className="h-6 w-[1px] border-r m-1"></span>
-            <div className="flex flex-1 relative items-center">
-              <Input
-                id="link-input"
-                type="text"
-                className="truncate flex-1 h-7 bg-transparent border-0 outline-0 shadow-none px-2"
-                onChange={handleInputChange}
-              />
-              <span
-                className="text-[#a2acb4] block pointer-events-none absolute opacity-0 max-w-full pr-[0.5rem] left-2 z-1 whitespace-nowrap overflow-ellipsis overflow-hidden transition-all data-[state=empty]:opacity-100 duration-150 ease-in-out transform data-[state=empty]:translate-x-0 data-[state=empty]:translate-y-0  translate-x-[calc(1rem_*_1)] translate-y-0 "
-                data-state={linkContent ? "full" : "empty"}
-              >
-                Enter link
-              </span>
-            </div>
-            <span className="h-6 w-[1px] border-r m-1"></span>
-
-            <IconB
-              variant={"ghost"}
-              i="check"
-              className="rounded-[8px] p-0 w-7 h-7"
-            />
-          </div>
-        </div>
-      </div>
+      />
     </div>
   );
 };
