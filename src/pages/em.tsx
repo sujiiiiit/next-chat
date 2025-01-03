@@ -1,4 +1,10 @@
-import React,{ useEffect, useRef, useMemo,useState,useCallback } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
 import lodash from "lodash";
 import emojiData from "@/assets/regularEmoji.json";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +15,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Icon } from "@/components/ui/icon";
+import { regularCategories, frequentCategory } from "./emojiCategory";
 import { useActiveCategoryScrollDetection } from "@/hooks/useActiveCategoryScrollDetection";
 
 // Memoize the emoji data for faster lookup
@@ -19,39 +26,45 @@ const emojiDataMap = lodash.memoize((emojiData: any[]) => {
   }, {});
 });
 
-function App() {
+interface EmProps {
+  activeCategory: string | null; // Step 1: Accept activeCategory as a prop
+  onCategoryChange: (newCategory: string) => void; // Step 1: Accept the function to change the active category
+}
+
+const Em: React.FC<EmProps> = ({ activeCategory, onCategoryChange }) => {
   const { toast } = useToast();
-  const [frequentEmojis, setFrequentEmojis] = useState<{ [key: string]: number }>({});
-  const [imageLoaded, setImageLoaded] = useState<{ [key: string]: boolean }>({});
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [frequentEmojis, setFrequentEmojis] = useState<{
+    [key: string]: number;
+  }>({});
+  const [imageLoaded, setImageLoaded] = useState<{ [key: string]: boolean }>(
+    {}
+  );
   const BodyRef = useRef<HTMLDivElement>(null!);
 
   useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
     if (activeCategory !== newCategory) {
-      setActiveCategory(newCategory);
-      console.log("Active category:", newCategory);
+      onCategoryChange(newCategory); // Step 2: Update the active category in the parent
+      // console.log("Active category:", newCategory);
     }
   });
 
-  const regularCategories = useMemo(() => [
-    { title: "Smileys & People", categories: [1], u: "regularSmileys" },
-    { title: "Animals & Nature", categories: [2], u: "regularAnimals" },
-    { title: "Food and Drinks", categories: [3], u: "regularFood" },
-    { title: "Travel and Places", categories: [4], u: "regularTravel" },
-    { title: "Activities and Sports", categories: [5], u: "regularActivities" },
-    { title: "Object and Symbol", categories: [6], u: "regularObject" },
-    { title: "Flags", categories: [7], u: "regularFlags" },
-  ], []);
+ 
+  
 
-
+ 
 
   // Filter and sort emojis based on categories
-  const filteredEmojis = useMemo(() => regularCategories.map(({ title, categories, u }) => ({
-    title,
-    u,
-    emojis: emojiData.filter(emoji => categories.includes(Number(emoji.c)))
-                      .sort((a, b) => a.o - b.o),
-  })), [regularCategories]);
+  const filteredEmojis = useMemo(
+    () =>
+      regularCategories.map(({ title, categories, u }) => ({
+        title,
+        u,
+        emojis: emojiData
+          .filter((emoji) => categories.includes(Number(emoji.c)))
+          .sort((a, b) => a.o - b.o),
+      })),
+    [regularCategories]
+  );
 
   const getEmojiImageUrl = useCallback(
     (emoji: any) => `/assets/img/apple/64/${emoji.u}.png`,
@@ -59,7 +72,7 @@ function App() {
   );
 
   useEffect(() => {
-    const storedData = localStorage.getItem("frequentEmojis");
+    const storedData = localStorage.getItem(frequentCategory.u);
     if (storedData) {
       setFrequentEmojis(JSON.parse(storedData));
     }
@@ -67,7 +80,7 @@ function App() {
 
   const saveFrequentEmojis = useCallback(
     lodash.debounce((frequentEmojis) => {
-      localStorage.setItem("frequentEmojis", JSON.stringify(frequentEmojis));
+      localStorage.setItem(frequentCategory.u, JSON.stringify(frequentEmojis));
     }, 1000),
     []
   );
@@ -76,17 +89,20 @@ function App() {
     saveFrequentEmojis(frequentEmojis);
   }, [frequentEmojis, saveFrequentEmojis]);
 
-  const handleEmojiClick = useCallback((emoji: any) => {
-    toast({
-      title: "Emoji Clicked",
-      description: JSON.stringify(emoji, null, 2),
-    });
+  const handleEmojiClick = useCallback(
+    (emoji: any) => {
+      toast({
+        title: "Emoji Clicked",
+        description: JSON.stringify(emoji, null, 2),
+      });
 
-    setFrequentEmojis(prev => ({
-      ...prev,
-      [emoji.u]: (prev[emoji.u] || 0) + 1,
-    }));
-  }, [toast]);
+      setFrequentEmojis((prev) => ({
+        ...prev,
+        [emoji.u]: (prev[emoji.u] || 0) + 1,
+      }));
+    },
+    [toast]
+  );
 
   const handleCopyEmoji = (emoji: any) => {
     navigator.clipboard.writeText(emoji.n);
@@ -97,7 +113,7 @@ function App() {
   };
 
   const handleRemoveEmoji = (emoji: any) => {
-    setFrequentEmojis(prev => {
+    setFrequentEmojis((prev) => {
       const updated = { ...prev };
       delete updated[emoji.u as string];
       return updated;
@@ -109,7 +125,7 @@ function App() {
   };
 
   const handleImageLoad = (unified: string) => {
-    setImageLoaded(prev => ({
+    setImageLoaded((prev) => ({
       ...prev,
       [unified]: true,
     }));
@@ -118,9 +134,9 @@ function App() {
   return (
     <div ref={BodyRef}>
       {Object.keys(frequentEmojis).length > 0 && (
-        <div className="emoji-category relative" data-name="Frequently Used">
+        <div className="emoji-category relative" data-name={frequentCategory.u}>
           <div className="category-title text-center text-base font-medium leading-[1.1875rem] p-[0.75rem_0.875rem_0.375rem] w-full relative cursor-pointer pointer-events-none text-black/40 dark:text-white/40">
-            <span>Frequently Used</span>
+            <span>{frequentCategory.title}</span>
           </div>
           <div className="category-items p-2 grid grid-cols-[repeat(auto-fill,2.625rem)] justify-between relative text-[2.125rem] leading-[2.125rem] gap-1">
             {Object.entries(frequentEmojis)
@@ -132,22 +148,26 @@ function App() {
                     <ContextMenu key={emoji.u}>
                       <ContextMenuTrigger>
                         <span
-                          className="overflow-hidden flex items-center justify-center p-[0.15rem] leading-inherit rounded-[8px] cursor-pointer select-none align-middle relative hover:bg-black/10 dark:hover:bg-white/5"
+                          className="overflow-hidden flex items-center justify-center p-[0.15rem] leading-inherit rounded-[8px] cursor-pointer select-none align-middle relative hover:bg-black/10 dark:hover:bg-white/5 aspect-square"
                           onClick={() => handleEmojiClick(emoji)}
                         >
                           <img
                             src={getEmojiImageUrl(emoji)}
                             alt={emoji.n}
-                            className="w-[34px] h-[34px] transform origin-center layer-transition opacity-0 scale-75 data-[loaded=true]:opacity-100 data-[loaded=true]:scale-100"
+                            className="w-[34px] h-[34px] transform origin-center layer-transition opacity-0 scale-75 data-[loaded=true]:opacity-100 data-[loaded=true]:scale-100 aspect-square"
                             width={34}
                             height={34}
                             loading="lazy"
                             onLoad={() => handleImageLoad(emoji.u)}
-                            data-loaded={imageLoaded[emoji.u as string] ? "true" : "false"}
+                            data-loaded={
+                              imageLoaded[emoji.u as string] ? "true" : "false"
+                            }
                           />
                           <span
-                            className="w-[34px] h-[34px] absolute rounded-full bg-[rgba(112,117,121,0.08)] data-[loaded=true]:opacity-0"
-                            data-loaded={imageLoaded[emoji.u] ? "true" : "false"}
+                            className="w-[34px] h-[34px] absolute rounded-full bg-[rgba(112,117,121,0.08)] data-[loaded=true]:opacity-0 aspect-square"
+                            data-loaded={
+                              imageLoaded[emoji.u] ? "true" : "false"
+                            }
                           ></span>
                         </span>
                       </ContextMenuTrigger>
@@ -161,7 +181,9 @@ function App() {
                           />
                           <span className="pr-4">Copy</span>
                         </ContextMenuItem>
-                        <ContextMenuItem onClick={() => handleRemoveEmoji(emoji)}>
+                        <ContextMenuItem
+                          onClick={() => handleRemoveEmoji(emoji)}
+                        >
                           <Icon
                             variant={"transparent"}
                             i="delete"
@@ -179,7 +201,7 @@ function App() {
         </div>
       )}
 
-      {filteredEmojis.map(({ title, emojis,u }) => (
+      {filteredEmojis.map(({ title, emojis, u }) => (
         <div key={title} className="emoji-category relative" data-name={u}>
           <div className="category-title text-center text-base font-medium leading-[1.1875rem] p-[0.75rem_0.875rem_0.375rem] w-full relative cursor-pointer pointer-events-none text-black/40 dark:text-white/40">
             <span>{title}</span>
@@ -188,13 +210,13 @@ function App() {
             {emojis.map((emoji) => (
               <span
                 key={emoji.u}
-                className="overflow-hidden flex items-center justify-center p-[0.15rem] leading-inherit rounded-[8px] cursor-pointer select-none align-middle relative hover:bg-black/10 dark:hover:bg-white/5"
+                className="overflow-hidden flex items-center justify-center p-[0.15rem] leading-inherit rounded-[8px] cursor-pointer select-none align-middle relative hover:bg-black/10 dark:hover:bg-white/5 aspect-square"
                 onClick={() => handleEmojiClick(emoji)}
               >
                 <img
                   src={getEmojiImageUrl(emoji)}
                   alt={emoji.n}
-                  className="w-[34px] h-[34px] transform origin-center layer-transition opacity-0 scale-75 data-[loaded=true]:opacity-100 data-[loaded=true]:scale-100"
+                  className="w-[34px] h-[34px] transform origin-center layer-transition opacity-0 scale-75 data-[loaded=true]:opacity-100 data-[loaded=true]:scale-100 aspect-square"
                   width={34}
                   height={34}
                   loading="lazy"
@@ -202,7 +224,7 @@ function App() {
                   data-loaded={imageLoaded[emoji.u] ? "true" : "false"}
                 />
                 <span
-                  className="w-[34px] h-[34px] absolute rounded-full bg-[rgba(112,117,121,0.08)] data-[loaded=true]:opacity-0"
+                  className="w-[34px] h-[34px] absolute rounded-full bg-[rgba(112,117,121,0.08)] data-[loaded=true]:opacity-0 aspect-square"
                   data-loaded={imageLoaded[emoji.u] ? "true" : "false"}
                 ></span>
               </span>
@@ -212,6 +234,6 @@ function App() {
       ))}
     </div>
   );
-}
+};
 
-export default React.memo(App); // Memoize the App component to prevent unnecessary re-renders.
+export default React.memo(Em); // Memoize the App component to prevent unnecessary re-renders.

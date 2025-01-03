@@ -1,15 +1,20 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IconB } from "@/components/ui/icon-b";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-const Player = React.lazy(() =>
+import dynamic from "next/dynamic";
+const Player = dynamic(() =>
   import("@lottiefiles/react-lottie-player").then((module) => ({
     default: module.Player,
   }))
 );
-const Em = React.lazy(() => import("../src/pages/em"));
-import { scrollToCenter, useScrollAmount } from "@/lib/functions";
+
+const Em = dynamic(() => import("@/pages/em"), {
+  ssr: false,
+});
+import { scrollToCenter } from "@/lib/functions";
+import { regularCategories, frequentCategory } from "./emojiCategory";
 
 const EmojiPage: React.FC = () => {
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -17,33 +22,45 @@ const EmojiPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [navPosition, setNavPosition] = useState(false);
   const [searchVisible, setSearchVisible] = useState(true);
-  const { isScrolled } = useScrollAmount(containerRef);
+
+  const [activeCategory, setActiveCategory] = useState<string | null>(null); // Step 1: State for activeCategory
+
+  const handleCategoryChange = (newCategory: string) => {
+    setActiveCategory(newCategory);
+    console.log("Active category:", newCategory);
+  };
+
+  
 
   const handleClick = useCallback((event: React.MouseEvent) => {
     const clickedElement = event.target as HTMLElement;
     scrollToCenter(containerRef, clickedElement);
   }, []);
+
   
+
   const focusInput = useCallback(() => {
     setNavPosition(true);
     searchInputRef.current?.focus();
   }, []);
-  
-  const onSearchInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value.trim() !== "") {
-      setSearchVisible(false);
-    } else {
-      setSearchVisible(true);
-    }
-  }, []);
-  
+
+  const onSearchInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.value.trim() !== "") {
+        setSearchVisible(false);
+      } else {
+        setSearchVisible(true);
+      }
+    },
+    []
+  );
+
   const unfocusInput = useCallback(() => {
     if (searchInputRef.current?.value.trim() === "") {
       setNavPosition(false);
       setSearchVisible(true);
     }
   }, []);
-  
 
   const closeSearch = () => {
     setSearchVisible(true);
@@ -54,7 +71,6 @@ const EmojiPage: React.FC = () => {
     }
   };
 
-  const isActive = "active";
   const emojiSearchStyle = {
     width: "1.75rem",
     height: "1.75rem",
@@ -69,10 +85,7 @@ const EmojiPage: React.FC = () => {
         data-state={"active"}
       >
         <div className="emoji-container w-full max-w-full overflow-hidden h-full">
-          <div
-            className="tab-container min-w-full w-full grid grid-cols-[100%] grid-rows-[100%] h-full
- "
-          >
+          <div className="tab-container min-w-full w-full grid grid-cols-[100%] grid-rows-[100%] h-full">
             <div
               className="tabs-tab layer-transition data-[state=active]:flex hidden overflow-hidden flex-col row-start-1 col-start-1 h-full min-h-full"
               data-state="active"
@@ -84,66 +97,58 @@ const EmojiPage: React.FC = () => {
               >
                 <div className="overflow-y-hidden scrollbar-none">
                   <nav className="w-full h-[3.0625rem] min-h-[3.0625rem] items-center p-0 px-[0.3125rem] z-[4] bg-transparent flex flex-start flex-row overflow-hidden scrollbar-none">
-                    <IconB variant={"ghost"} i="recent" />
+                    <IconB
+                      variant={"ghost"}
+                      i={frequentCategory.i}
+                      className="bg-transparent data-[state=true]:bg-black/5 dark:data-[state=true]:bg-white/5 data-[state=true]:text-text1 rounded-[12px]"
+                      data-state={activeCategory === frequentCategory.u}
+                    />
 
                     <div
                       className="layer-transition cursor-pointer overflow-hidden overflow-x-auto scrollbar-none flex-none w-[1.875rem] h-[1.875rem] rounded-[15px] m-0 mx-[0.3125rem] data-[state=active]:w-[8.5rem] data-[state=active]:bg-black/5 dark:data-[state=active]:bg-white/5 data-[state=active]:px-[0.275rem] data-[state=active]:gap-[0.3125rem]"
-                      data-state={isActive}
+                      data-state={
+                        regularCategories.some(
+                          (category: { u: string }) =>
+                            category.u === activeCategory
+                        )
+                          ? "active"
+                          : ""
+                      }
                     >
                       <div
                         className="layer-transition relative w-[8.5rem] h-full flex gap-[0.3125rem] flex-start items-center  mx-[0.3125rem] 
-                      data-[state=active]:mx-0"
-                        data-state={isActive}
+                      data-[state=active]:mx-0 "
+                        data-state={
+                          regularCategories.some(
+                            (category: { u: string }) =>
+                              category.u === activeCategory
+                          )
+                            ? "active"
+                            : ""
+                        }
                       >
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="smile"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="animals"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="apple"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="car"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="football"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="lamp"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="flag"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
+                        {/* category icons buttons  */}
+                        {regularCategories.map(
+                          (icon: { i: string; u: string }) => (
+                            <IconB
+                              key={icon.i}
+                              variant="ghost"
+                              size="emoji"
+                              i={icon.i}
+                              className="data-[state=active]:scale-[0.8] data-[active=true]:text-text1"
+                              data-state={
+                                regularCategories.some(
+                                  (category: { u: string }) =>
+                                    category.u === activeCategory
+                                )
+                                  ? "active"
+                                  : ""
+                              }
+                              data-active={activeCategory === icon.u}
+                              onClick={() => handleCategoryChange(icon.u)}
+                            />
+                          )
+                        )}
                       </div>
                     </div>
                   </nav>
@@ -168,9 +173,7 @@ const EmojiPage: React.FC = () => {
                         onBlur={unfocusInput}
                       />
                       <div
-                        className={`layer-transition overflow-hidden overflow-x-auto scrollbar-none  absolute w-auto h-full inset-0 left-[calc(1.25rem_+_1.375rem)] flex items-center justify-between pointer-events-auto z-[1] data-[state=true]:opacity-100 opacity-0 ${
-                          isScrolled ? "search-webkit-mask" : ""
-                        }`}
+                        className={`layer-transition overflow-hidden overflow-x-auto scrollbar-none  absolute w-auto h-full inset-0 left-[calc(1.25rem_+_1.375rem)] flex items-center justify-between pointer-events-auto z-[1] data-[state=true]:opacity-100 opacity-0`}
                         data-state={searchVisible}
                         ref={containerRef}
                       >
@@ -180,7 +183,7 @@ const EmojiPage: React.FC = () => {
                         >
                           Search Emoji
                         </span>
-                        <div className="flex relative  gap-[7px]">
+                        <div className="flex relative gap-[7px]">
                           {[
                             "Love",
                             "Approval",
@@ -202,12 +205,16 @@ const EmojiPage: React.FC = () => {
                                 className="opacity-60 hover:opacity-100 focus:opacity-100 focus:bg-black/5 dark:focus:bg-white/10 backdrop-dropdown w-fit h-fit rounded-full p-0"
                               >
                                 <Player
+                                  id={emoji}
                                   keepLastFrame={true}
                                   renderer={"canvas"}
-                                  rendererSettings={{ clearCanvas: true }}
+                                  rendererSettings={{
+                                    clearCanvas: true,
+                                  }}
                                   autoplay={true}
                                   loop={false}
                                   controls={true}
+                                  speed={0.8}
                                   src={`/assets/emojiSearch/${emoji}.json`}
                                   style={emojiSearchStyle}
                                 ></Player>
@@ -235,17 +242,16 @@ const EmojiPage: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <div ref={scrollEmojiset}></div>
-                    <Em />
+                    <Em
+                      activeCategory={activeCategory}
+                      onCategoryChange={handleCategoryChange}
+                    />
                   </div>
                 </ScrollArea>
               </div>
             </div>
-            <div className="tabs-tab layer-transition data-[state=active]:flex hidden overflow-hidden flex-col row-start-1 col-start-1 h-full min-h-full"></div>
-            <div className="tabs-tab layer-transition data-[state=active]:flex hidden overflow-hidden flex-col row-start-1 col-start-1 h-full min-h-full"></div>
           </div>
         </div>
-        <div className="emoji-tabs"></div>
       </div>
     </>
   );
