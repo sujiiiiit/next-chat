@@ -19,6 +19,9 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+import { Toaster } from "@/components/ui/toaster"
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,6 +41,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { useMemo } from "react";
 import { useWindowDimensions } from "@/hooks/useWindowDimensions";
@@ -72,10 +72,15 @@ const Main: React.FC = () => {
       const maxHeight = 27 * 16; // Assuming 1rem = 16px
       const clampedHeight = Math.min(Math.max(newHeight, 37), maxHeight);
       content.style.height = `${clampedHeight}px`;
-      console.log(clampedHeight);
+      // console.log(clampedHeight);
       setIsHeightChanged(clampedHeight >= 40);
     }
   };
+
+  useEffect(() => {
+    adjustHeight();
+  }, [contentEditableRef.current?.innerHTML]);
+
 
   return (
     <div className="w-dvw h-[calc(var(--vh,1vh)*100)] flex overflow-hidden relative">
@@ -243,6 +248,7 @@ const Main: React.FC = () => {
           />
 
           <SVGToCanvas
+          
             url={"/assets/bg/pattern.svg"}
             width={dimensions.width}
             height={dimensions.height}
@@ -350,7 +356,6 @@ const Main: React.FC = () => {
           </div>
           <Emoji />
         </div>
-        
       </div>
       <MarkupContainer
         isSelected={isSelected}

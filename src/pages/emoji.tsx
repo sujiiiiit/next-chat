@@ -1,16 +1,19 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IconB } from "@/components/ui/icon-b";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-const Player = React.lazy(() =>
+import dynamic from "next/dynamic";
+const Player = dynamic(() =>
   import("@lottiefiles/react-lottie-player").then((module) => ({
     default: module.Player,
   }))
 );
 
-import { scrollToCenter, useScrollAmount } from "@/lib/functions";
-import Em from "./em"
+const Em = dynamic(() => import("@/pages/em"), {
+  ssr: false,
+});
+import { scrollToCenter } from "@/lib/functions";
 
 const EmojiPage: React.FC = () => {
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -18,32 +21,34 @@ const EmojiPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [navPosition, setNavPosition] = useState(false);
   const [searchVisible, setSearchVisible] = useState(true);
-  const { isScrolled } = useScrollAmount(containerRef);
 
-  const handleClick = (event: React.MouseEvent) => {
+  const handleClick = useCallback((event: React.MouseEvent) => {
     const clickedElement = event.target as HTMLElement;
     scrollToCenter(containerRef, clickedElement);
-  };
+  }, []);
 
-  const focusInput = () => {
+  const focusInput = useCallback(() => {
     setNavPosition(true);
     searchInputRef.current?.focus();
-  };
+  }, []);
 
-  const onSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value.trim() !== "") {
-      setSearchVisible(false);
-    } else {
-      setSearchVisible(true);
-    }
-  };
+  const onSearchInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.value.trim() !== "") {
+        setSearchVisible(false);
+      } else {
+        setSearchVisible(true);
+      }
+    },
+    []
+  );
 
-  const unfocusInput = () => {
+  const unfocusInput = useCallback(() => {
     if (searchInputRef.current?.value.trim() === "") {
       setNavPosition(false);
       setSearchVisible(true);
     }
-  };
+  }, []);
 
   const closeSearch = () => {
     setSearchVisible(true);
@@ -69,10 +74,7 @@ const EmojiPage: React.FC = () => {
         data-state={"active"}
       >
         <div className="emoji-container w-full max-w-full overflow-hidden h-full">
-          <div
-            className="tab-container min-w-full w-full grid grid-cols-[100%] grid-rows-[100%] h-full
- "
-          >
+          <div className="tab-container min-w-full w-full grid grid-cols-[100%] grid-rows-[100%] h-full">
             <div
               className="tabs-tab layer-transition data-[state=active]:flex hidden overflow-hidden flex-col row-start-1 col-start-1 h-full min-h-full"
               data-state="active"
@@ -95,55 +97,26 @@ const EmojiPage: React.FC = () => {
                       data-[state=active]:mx-0"
                         data-state={isActive}
                       >
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="smile"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="animals"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="apple"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="car"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="football"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="lamp"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
-                        <IconB
-                          variant={"ghost"}
-                          size={"emoji"}
-                          i="flag"
-                          className="data-[state=active]:scale-[0.8]"
-                          data-state={isActive}
-                        />
+                        {/* category icons buttons  */}
+                        {[
+                          "smile",
+                          "animals",
+                          "apple",
+                          "car",
+                          "football",
+                          "lamp",
+                          "flag",
+                        ].map((icon) => (
+                          <IconB
+                            key={icon}
+                            variant="ghost"
+                            size="emoji"
+                            i={icon}
+                            className="data-[state=active]:scale-[0.8]"
+                            data-state={isActive}
+                            data-category={"active"}
+                          />
+                        ))}
                       </div>
                     </div>
                   </nav>
@@ -168,9 +141,7 @@ const EmojiPage: React.FC = () => {
                         onBlur={unfocusInput}
                       />
                       <div
-                        className={`layer-transition overflow-hidden overflow-x-auto scrollbar-none  absolute w-auto h-full inset-0 left-[calc(1.25rem_+_1.375rem)] flex items-center justify-between pointer-events-auto z-[1] data-[state=true]:opacity-100 opacity-0 ${
-                          isScrolled ? "search-webkit-mask" : ""
-                        }`}
+                        className={`layer-transition overflow-hidden overflow-x-auto scrollbar-none  absolute w-auto h-full inset-0 left-[calc(1.25rem_+_1.375rem)] flex items-center justify-between pointer-events-auto z-[1] data-[state=true]:opacity-100 opacity-0`}
                         data-state={searchVisible}
                         ref={containerRef}
                       >
@@ -180,7 +151,7 @@ const EmojiPage: React.FC = () => {
                         >
                           Search Emoji
                         </span>
-                        <div className="flex relative  gap-[7px]">
+                        <div className="flex relative gap-[7px]">
                           {[
                             "Love",
                             "Approval",
@@ -202,12 +173,16 @@ const EmojiPage: React.FC = () => {
                                 className="opacity-60 hover:opacity-100 focus:opacity-100 focus:bg-black/5 dark:focus:bg-white/10 backdrop-dropdown w-fit h-fit rounded-full p-0"
                               >
                                 <Player
+                                  id={emoji}
                                   keepLastFrame={true}
                                   renderer={"canvas"}
-                                  rendererSettings={{ clearCanvas: true }}
+                                  rendererSettings={{
+                                    clearCanvas: true,
+                                  }}
                                   autoplay={true}
                                   loop={false}
                                   controls={true}
+                                  speed={0.8}
                                   src={`/assets/emojiSearch/${emoji}.json`}
                                   style={emojiSearchStyle}
                                 ></Player>
@@ -235,16 +210,13 @@ const EmojiPage: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <div><Em/></div>
+                    <Em />
                   </div>
                 </ScrollArea>
               </div>
             </div>
-            <div className="tabs-tab layer-transition data-[state=active]:flex hidden overflow-hidden flex-col row-start-1 col-start-1 h-full min-h-full"></div>
-            <div className="tabs-tab layer-transition data-[state=active]:flex hidden overflow-hidden flex-col row-start-1 col-start-1 h-full min-h-full"></div>
           </div>
         </div>
-        <div className="emoji-tabs"></div>
       </div>
     </>
   );
