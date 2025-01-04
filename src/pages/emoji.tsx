@@ -1,5 +1,4 @@
-// emoji.tsx
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { IconB } from "@/components/ui/icon-b";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
@@ -33,7 +32,7 @@ const EmojiPageComponent: React.FC = () => {
 
   useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
     if (activeCategory !== newCategory) {
-      handleCategoryChange(newCategory);
+      setActiveCategory(newCategory);
     }
   });
 
@@ -74,12 +73,6 @@ const EmojiPageComponent: React.FC = () => {
 
   const handleCategoryChange = useCallback((category: string) => {
     setActiveCategory(category);
-    const categoryElement = document.querySelector(
-      `.regularCategory-icon[data-active="true"]`
-    ) as HTMLElement;
-    if (categoryElement) {
-      scrollToCenter(activeCategoryContainerRef, categoryElement);
-    }
   }, []);
 
   const handleCategoryChangeonClick = useCallback(
@@ -89,6 +82,17 @@ const EmojiPageComponent: React.FC = () => {
     },
     [scrollToCategory]
   );
+
+  useEffect(() => {
+    if (activeCategory) {
+      const categoryElement = document.querySelector(
+        `.regularCategory-icon[data-active="true"]`
+      ) as HTMLElement;
+      if (categoryElement) {
+        scrollToCenter(activeCategoryContainerRef, categoryElement);
+      }
+    }
+  }, [activeCategory]);
 
   const emojiSearchStyle = {
     width: "1.75rem",
