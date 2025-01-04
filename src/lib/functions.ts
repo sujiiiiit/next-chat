@@ -1,32 +1,15 @@
 import { useEffect, useState } from "react";
 
-export function scrollToCenter(
-  containerRef: React.RefObject<HTMLDivElement | null>,
-  clickedElement: HTMLElement
-) {
-  if (!containerRef.current || !clickedElement) return;
-
-  const container = containerRef.current;
-  const containerWidth = container.offsetWidth;
-  const containerScrollLeft = container.scrollLeft;
-
-  // Get the clicked element's position relative to the container
-  const elementRect = clickedElement.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  // Calculate the element's position relative to the container
-  const elementCenter = elementRect.left + elementRect.width / 2;
-  const containerCenter = containerRect.left + containerWidth / 2;
-
-  // Calculate the scroll position needed to center the element
-  const scrollTo = elementCenter - containerCenter + containerScrollLeft;
-
-  // Scroll the container to center the element
-  container.scrollTo({
-    left: scrollTo,
-    behavior: "smooth",
-  });
-}
+// functions.ts
+export const scrollToCenter = (containerRef: React.RefObject<HTMLDivElement | null>, element: HTMLElement) => {
+  if (containerRef.current) {
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const offset = elementRect.left - containerRect.left + elementRect.width / 2 - containerRect.width / 2;
+    container.scrollBy({ left: offset, behavior: 'smooth' });
+  }
+};
 
 export function useScrollAmount(ref: React.RefObject<HTMLDivElement | null>) {
   const [scroll, setScroll] = useState({ scrollTop: 0, scrollLeft: 0 });

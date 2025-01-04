@@ -1,15 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function categoryNameFromDom($category: Element | null): string | null {
   return $category?.getAttribute("data-name") ?? null;
 }
 
 export function useActiveCategoryScrollDetection(
-  BodyRef: React.RefObject<HTMLElement>,
+  BodyRef: React.RefObject<HTMLDivElement | null>,
   setActiveCategory: (category: string) => void
 ) {
   useEffect(() => {
-    const visibleCategories = new Map();
+    const visibleCategories = new Map<string, number>();
     const bodyRef = BodyRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -19,28 +19,22 @@ export function useActiveCategoryScrollDetection(
 
         for (const entry of entries) {
           const id = categoryNameFromDom(entry.target);
-          visibleCategories.set(id, entry.intersectionRatio);
-        }
-
-        const ratios = Array.from(visibleCategories);
-        const lastCategory = ratios[ratios.length - 1];
-
-        if (lastCategory[1] === 1) {
-          setActiveCategory(lastCategory[0]);
-          // console.log("Active category:", lastCategory[0]);
-          return;
-        }
-
-        for (const [id, ratio] of ratios) {
-          if (ratio) {
-            setActiveCategory(id);
-            // console.log("Active category:", id);
-            break;
+          if (id) {
+            visibleCategories.set(id, entry.intersectionRatio);
           }
+        }
+
+        const sortedCategories = Array.from(visibleCategories.entries()).sort(
+          (a, b) => b[1] - a[1]
+        );
+
+        if (sortedCategories.length > 0) {
+          setActiveCategory(sortedCategories[0][0]);
         }
       },
       {
         threshold: [0, 1],
+        rootMargin: "0px",
       }
     );
 

@@ -1,6 +1,6 @@
-//em.tsx
 import React, {
   useEffect,
+  useRef,
   useMemo,
   useState,
   useCallback,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/context-menu";
 import { Icon } from "@/components/ui/icon";
 import { regularCategories, frequentCategory } from "./emojiCategory";
+import { useActiveCategoryScrollDetection } from "@/hooks/useActiveCategoryScrollDetection";
 
 // Memoize the emoji data for faster lookup
 const emojiDataMap = lodash.memoize((emojiData: any[]) => {
@@ -25,9 +26,12 @@ const emojiDataMap = lodash.memoize((emojiData: any[]) => {
   }, {});
 });
 
+interface EmProps {
+  activeCategory: string | null; // Step 1: Accept activeCategory as a prop
+  onCategoryChange: (newCategory: string) => void; // Step 1: Accept the function to change the active category
+}
 
-
-const Em: React.FC = () => {
+const Em: React.FC<EmProps> = ({ activeCategory, onCategoryChange }) => {
   const { toast } = useToast();
   const [frequentEmojis, setFrequentEmojis] = useState<{
     [key: string]: number;
@@ -35,6 +39,19 @@ const Em: React.FC = () => {
   const [imageLoaded, setImageLoaded] = useState<{ [key: string]: boolean }>(
     {}
   );
+  const BodyRef = useRef<HTMLDivElement>(null!);
+
+  useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
+    if (activeCategory !== newCategory) {
+      onCategoryChange(newCategory); // Step 2: Update the active category in the parent
+      // console.log("Active category:", newCategory);
+    }
+  });
+
+ 
+  
+
+ 
 
   // Filter and sort emojis based on categories
   const filteredEmojis = useMemo(
@@ -115,9 +132,9 @@ const Em: React.FC = () => {
   };
 
   return (
-    <div>
+    <div ref={BodyRef}>
       {Object.keys(frequentEmojis).length > 0 && (
-        <div className="emoji-category relative" >
+        <div className="emoji-category relative" data-name={frequentCategory.u}>
           <div className="category-title text-center text-base font-medium leading-[1.1875rem] p-[0.75rem_0.875rem_0.375rem] w-full relative cursor-pointer pointer-events-none text-black/40 dark:text-white/40">
             <span>{frequentCategory.title}</span>
           </div>
@@ -137,7 +154,7 @@ const Em: React.FC = () => {
                           <img
                             src={getEmojiImageUrl(emoji)}
                             alt={emoji.n}
-                            className="w-[34px] h-[34px]  layer-transition opacity-0  data-[loaded=true]:opacity-100  aspect-square"
+                            className="w-[34px] h-[34px] transform origin-center layer-transition opacity-0 scale-75 data-[loaded=true]:opacity-100 data-[loaded=true]:scale-100 aspect-square"
                             width={34}
                             height={34}
                             loading="lazy"
@@ -199,14 +216,12 @@ const Em: React.FC = () => {
                 <img
                   src={getEmojiImageUrl(emoji)}
                   alt={emoji.n}
-                  className="w-[34px] h-[34px]  layer-transition opacity-0  data-[loaded=true]:opacity-100  aspect-square"
+                  className="w-[34px] h-[34px] transform origin-center layer-transition opacity-0 scale-75 data-[loaded=true]:opacity-100 data-[loaded=true]:scale-100 aspect-square"
                   width={34}
                   height={34}
                   loading="lazy"
                   onLoad={() => handleImageLoad(emoji.u)}
-                  data-loaded={
-                    imageLoaded[emoji.u as string] ? "true" : "false"
-                  }
+                  data-loaded={imageLoaded[emoji.u] ? "true" : "false"}
                 />
                 <span
                   className="w-[34px] h-[34px] absolute rounded-full bg-[rgba(112,117,121,0.08)] data-[loaded=true]:opacity-0 aspect-square"
@@ -221,4 +236,4 @@ const Em: React.FC = () => {
   );
 };
 
-export default Em;
+export default React.memo(Em); // Memoize the App component to prevent unnecessary re-renders.
