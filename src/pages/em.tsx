@@ -56,7 +56,7 @@ const Em: React.FC = () => {
   );
 
   const getEmojiImageUrl = useCallback(
-    (emoji: { u: string }) => `/assets/img/apple/64/${emoji.u}.png`,
+    (emoji: { u: string }) => `/static/assets/img/apple/64/${emoji.u}.png`,
     []
   );
 

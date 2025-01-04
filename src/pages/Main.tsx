@@ -249,7 +249,7 @@ const Main: React.FC = () => {
 
           <SVGToCanvas
           
-            url={"/assets/bg/pattern.svg"}
+            url={"/static/assets/bg/pattern.svg"}
             width={dimensions.width}
             height={dimensions.height}
             mask={isDark}

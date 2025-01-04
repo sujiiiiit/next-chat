@@ -1,7 +1,7 @@
 @font-face {
   font-family: tgico;
-  src: url(/assets/font/tgico.ttf) format("truetype"),
-    url(/assets/font/tgico.svg?#tgico) format("svg");
+  src: url(/static/assets/font/tgico.ttf) format("truetype"),
+    url(/static/assets/font/tgico.svg?#tgico) format("svg");
 
   font-weight: 400;
   font-style: normal;

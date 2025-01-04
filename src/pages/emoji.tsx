@@ -87,21 +87,10 @@ const EmojiPageComponent: React.FC = () => {
       observer?.disconnect();
       setActiveCategory(category);
       scrollToCategory(category);
-      if (activeCategory) {
-        const categoryElement = document.querySelector(
-          `.regularCategory-icon[data-active="true"]`
-        ) as HTMLElement;
-        if (categoryElement) {
-          scrollToCenter(activeCategoryContainerRef, categoryElement);
-        }
-      }
     },
     [scrollToCategory,activeCategory]
   );
 
-  // useEffect(() => {
-    
-  // }, [activeCategory]);
 
   const emojiSearchStyle = {
     width: "1.75rem",
@@ -247,7 +236,7 @@ const EmojiPageComponent: React.FC = () => {
                                 loop={false}
                                 controls={true}
                                 speed={0.8}
-                                src={`/assets/emojiSearch/${emoji}.json`}
+                                src={`/static/assets/emojiSearch/${emoji}.json`}
                                 style={emojiSearchStyle}
                               ></Player>
                             </button>
