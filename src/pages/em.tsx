@@ -117,7 +117,7 @@ const Em: React.FC = () => {
   return (
     <div>
       {Object.keys(frequentEmojis).length > 0 && (
-        <div className="emoji-category relative" >
+        <div className="emoji-category relative" data-name={frequentCategory.u}>
           <div className="category-title text-center text-base font-medium leading-[1.1875rem] p-[0.75rem_0.875rem_0.375rem] w-full relative cursor-pointer pointer-events-none text-black/40 dark:text-white/40">
             <span>{frequentCategory.title}</span>
           </div>

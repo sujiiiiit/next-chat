@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function categoryNameFromDom($category: Element | null): string | null {
   return $category?.getAttribute("data-name") ?? null;
@@ -8,8 +8,6 @@ export function useActiveCategoryScrollDetection(
   BodyRef: React.RefObject<HTMLDivElement | null>,
   setActiveCategory: (category: string) => void
 ) {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
   useEffect(() => {
     const visibleCategories = new Map<string, number>();
     const bodyRef = BodyRef.current;
@@ -40,8 +38,6 @@ export function useActiveCategoryScrollDetection(
       }
     );
 
-    observerRef.current = observer;
-
     bodyRef?.querySelectorAll(".emoji-category").forEach((el) => {
       observer.observe(el);
     });
@@ -50,6 +46,4 @@ export function useActiveCategoryScrollDetection(
       observer.disconnect();
     };
   }, [BodyRef, setActiveCategory]);
-
-  return observerRef.current;
 }

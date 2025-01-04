@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from "react";
 
 interface EmojiContextProps {
   activeCategory: string | null;
@@ -42,7 +42,7 @@ export const EmojiProvider: React.FC<EmojiProviderProps> = ({ children }) => {
 export const useEmojiContext = (): EmojiContextProps => {
   const context = useContext(EmojiContext);
   if (!context) {
-    throw new Error('useEmojiContext must be used within an EmojiProvider');
+    throw new Error("useEmojiContext must be used within an EmojiProvider");
   }
   return context;
 };

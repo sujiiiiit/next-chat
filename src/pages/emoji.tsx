@@ -30,9 +30,17 @@ const EmojiPageComponent: React.FC = () => {
     BodyRef: BodyRef,
   });
 
-  useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
+  const observer = useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
     if (activeCategory !== newCategory) {
       setActiveCategory(newCategory);
+      if (activeCategory) {
+        const categoryElement = document.querySelector(
+          `.regularCategory-icon[data-active="true"]`
+        ) as HTMLElement;
+        if (categoryElement) {
+          scrollToCenter(activeCategoryContainerRef, categoryElement);
+        }
+      }
     }
   });
 
@@ -77,22 +85,24 @@ const EmojiPageComponent: React.FC = () => {
 
   const handleCategoryChangeonClick = useCallback(
     (category: string) => {
+      observer?.disconnect();
       setActiveCategory(category);
       scrollToCategory(category);
+      if (activeCategory) {
+        const categoryElement = document.querySelector(
+          `.regularCategory-icon[data-active="true"]`
+        ) as HTMLElement;
+        if (categoryElement) {
+          scrollToCenter(activeCategoryContainerRef, categoryElement);
+        }
+      }
     },
-    [scrollToCategory]
+    [scrollToCategory,activeCategory]
   );
 
-  useEffect(() => {
-    if (activeCategory) {
-      const categoryElement = document.querySelector(
-        `.regularCategory-icon[data-active="true"]`
-      ) as HTMLElement;
-      if (categoryElement) {
-        scrollToCenter(activeCategoryContainerRef, categoryElement);
-      }
-    }
-  }, [activeCategory]);
+  // useEffect(() => {
+    
+  // }, [activeCategory]);
 
   const emojiSearchStyle = {
     width: "1.75rem",
@@ -130,7 +140,7 @@ const EmojiPageComponent: React.FC = () => {
                     }
                   />
                   <div
-                    className="layer-transition cursor-pointer overflow-hidden overflow-x-auto scrollbar-none flex-none w-[1.875rem] h-[1.875rem] rounded-[15px] m-0 mx-[0.3125rem] data-[state=active]:w-[8.5rem] data-[state=active]:bg-black/5 dark:data-[state=active]:bg-white/5 data-[state=active]:px-[0.275rem] data-[state=active]:gap-[0.3125rem]"
+                    className="layer-transition cursor-pointer overflow-hidden data-[state=active]:overflow-x-auto scrollbar-none flex-none w-[1.875rem] h-[1.875rem] rounded-[15px] m-0 mx-[0.3125rem] data-[state=active]:w-[8.5rem] data-[state=active]:bg-black/5 dark:data-[state=active]:bg-white/5 data-[state=active]:px-[0.195rem] flex-start"
                     ref={activeCategoryContainerRef}
                     data-state={
                       regularCategories.some(
@@ -141,7 +151,7 @@ const EmojiPageComponent: React.FC = () => {
                     }
                   >
                     <div
-                      className="layer-transition relative w-[8.5rem] h-full flex gap-[0.3125rem] items-center mx-[0.2rem] data-[state=active]:mx-0"
+                      className="layer-transition relative w-[8.5rem] h-full flex gap-[0.375rem] items-center mx-[0.2rem] data-[state=active]:mx-0"
                       data-state={
                         regularCategories.some(
                           (category) => category.u === activeCategory
@@ -156,7 +166,7 @@ const EmojiPageComponent: React.FC = () => {
                           variant="ghost"
                           size="emoji"
                           i={icon.i}
-                          className="regularCategory-icon data-[state=active]:scale-[0.8] data-[active=true]:text-text1"
+                          className="regularCategory-icon data-[state=active]:scale-[0.8] data-[active=true]:text-text1 opacity-0 data-[name=regularSmileys]:opacity-100 data-[state=active]:opacity-100 duration-100"
                           data-state={
                             regularCategories.some(
                               (category) => category.u === activeCategory
@@ -165,6 +175,7 @@ const EmojiPageComponent: React.FC = () => {
                               : ""
                           }
                           data-active={activeCategory === icon.u}
+                          data-name={icon.u}
                           onClick={() => handleCategoryChangeonClick(icon.u)}
                         />
                       ))}
@@ -183,7 +194,9 @@ const EmojiPageComponent: React.FC = () => {
                   className="layer-transition h-[2.375rem] m-0 mx-2 mb-1 rounded-[10px] data-[state=true]:mt-2"
                   data-state={navPosition}
                 >
-                  <div className="relative w-full overflow-hidden flex items-center h-[2.375rem] bg-black/5 dark:bg-white/5 rounded-[10px] m-0 emoji-category"                   data-name={frequentCategory.u}
+                  <div
+                    className="relative w-full overflow-hidden flex items-center h-[2.375rem] bg-black/5 dark:bg-white/5 rounded-[10px] m-0 "
+                    data-name={frequentCategory.u}
                   >
                     <Input
                       className="layer-transition bg-transparent rounded-[inherit] border-0 px-[calc(1.25rem_+_1.375rem)] z-[1] relative box-border h-[inherit] data-[state=false]:z-[2] font-normal"
