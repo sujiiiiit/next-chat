@@ -33,7 +33,7 @@ export default class CacheStorageController {
     return this.timeoutOperation((cache) => cache.put('/' + entryName, response));
   }
 
-  public getFile(fileName: string, method: 'blob' | 'json' | 'text' = 'blob'): Promise<any> {
+  public getFile(fileName: string, method: 'blob' | 'json' | 'text' = 'blob'): Promise<Blob | JSON | string> {
     return this.get(fileName).then((response) => {
       if (!response) {
         throw new Error('NO_ENTRY_FOUND');

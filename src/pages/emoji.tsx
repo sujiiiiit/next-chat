@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { IconB } from "@/components/ui/icon-b";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
@@ -14,7 +14,8 @@ import { useActiveCategoryScrollDetection } from "@/hooks/useActiveCategoryScrol
 const Player = dynamic(() =>
   import("@lottiefiles/react-lottie-player").then((module) => ({
     default: module.Player,
-  }))
+  })),
+  { ssr: false }
 );
 
 const EmojiPageComponent: React.FC = () => {
@@ -79,9 +80,7 @@ const EmojiPageComponent: React.FC = () => {
     }
   }, []);
 
-  const handleCategoryChange = useCallback((category: string) => {
-    setActiveCategory(category);
-  }, []);
+
 
   const handleCategoryChangeonClick = useCallback(
     (category: string) => {

@@ -6,7 +6,13 @@ import React, {
   useCallback,
 } from "react";
 import lodash from "lodash";
-import emojiData from "@/assets/regularEmoji.json";
+import rawEmojiData from "@/assets/regularEmoji.json";
+
+// Ensure all 'c' properties are numbers
+const emojiData = rawEmojiData.map((emoji) => ({
+  ...emoji,
+  c: Number(emoji.c),
+}));
 import { useToast } from "@/hooks/use-toast";
 import {
   ContextMenu,
@@ -18,8 +24,8 @@ import { Icon } from "@/components/ui/icon";
 import { regularCategories, frequentCategory } from "./emojiCategory";
 
 // Memoize the emoji data for faster lookup
-const emojiDataMap = lodash.memoize((emojiData: any[]) => {
-  return emojiData.reduce((map: { [key: string]: any }, emoji: any) => {
+const emojiDataMap = lodash.memoize((emojiData: { u: string; c: number; o: number; n: string }[]) => {
+  return emojiData.reduce((map: { [key: string]: { u: string; c: number; o: number; n: string } }, emoji) => {
     map[emoji.u] = emoji;
     return map;
   }, {});
@@ -46,11 +52,11 @@ const Em: React.FC = () => {
           .filter((emoji) => categories.includes(Number(emoji.c)))
           .sort((a, b) => a.o - b.o),
       })),
-    [regularCategories]
+    []
   );
 
   const getEmojiImageUrl = useCallback(
-    (emoji: any) => `/assets/img/apple/64/${emoji.u}.png`,
+    (emoji: { u: string }) => `/assets/img/apple/64/${emoji.u}.png`,
     []
   );
 
@@ -62,7 +68,7 @@ const Em: React.FC = () => {
   }, []);
 
   const saveFrequentEmojis = useCallback(
-    lodash.debounce((frequentEmojis) => {
+    lodash.debounce((frequentEmojis: { [key: string]: number }) => {
       localStorage.setItem(frequentCategory.u, JSON.stringify(frequentEmojis));
     }, 1000),
     []
@@ -73,7 +79,7 @@ const Em: React.FC = () => {
   }, [frequentEmojis, saveFrequentEmojis]);
 
   const handleEmojiClick = useCallback(
-    (emoji: any) => {
+    (emoji: { u: string; n: string }) => {
       toast({
         title: "Emoji Clicked",
         description: JSON.stringify(emoji, null, 2),
@@ -87,7 +93,7 @@ const Em: React.FC = () => {
     [toast]
   );
 
-  const handleCopyEmoji = (emoji: any) => {
+  const handleCopyEmoji = (emoji: { u: string; n: string }) => {
     navigator.clipboard.writeText(emoji.n);
     toast({
       title: "Emoji Copied",
@@ -95,7 +101,7 @@ const Em: React.FC = () => {
     });
   };
 
-  const handleRemoveEmoji = (emoji: any) => {
+  const handleRemoveEmoji = (emoji: { u: string }) => {
     setFrequentEmojis((prev) => {
       const updated = { ...prev };
       delete updated[emoji.u as string];
@@ -124,7 +130,7 @@ const Em: React.FC = () => {
           <div className="category-items p-2 grid grid-cols-[repeat(auto-fill,2.625rem)] justify-between relative text-[2.125rem] leading-[2.125rem] gap-1">
             {Object.entries(frequentEmojis)
               .sort((a, b) => (b[1] as number) - (a[1] as number))
-              .map(([unified, count]) => {
+              .map(([unified]) => {
                 const emoji = emojiDataMap(emojiData)[unified];
                 return (
                   emoji && (
