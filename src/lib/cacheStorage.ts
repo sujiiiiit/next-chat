@@ -1,16 +1,16 @@
-// cacheStorage.ts
-
-export type CacheStorageDbName = 'cachedAssets'|'cachedFiles';
+export type CacheStorageDbName = 'cachedFiles' | 'cachedStreamChunks' | 'cachedAssets';
 
 export default class CacheStorageController {
-  private static STORAGES: CacheStorageController[] = [];
   private openDbPromise: Promise<Cache> | undefined;
-
   private useStorage = true;
 
   constructor(private dbName: CacheStorageDbName) {
-    this.openDatabase();
-    CacheStorageController.STORAGES.push(this);
+    if ('caches' in window) {
+      this.openDatabase();
+    } else {
+      this.useStorage = false;
+      console.error('Cache Storage API is not supported in this browser.');
+    }
   }
 
   private openDatabase(): Promise<Cache> {
@@ -18,33 +18,35 @@ export default class CacheStorageController {
   }
 
   public delete(entryName: string) {
+    if (!this.useStorage) {
+      return Promise.reject(new Error('STORAGE_OFFLINE'));
+    }
+
     return this.timeoutOperation((cache) => cache.delete('/' + entryName));
   }
 
   public deleteAll() {
+    if (!this.useStorage) {
+      return Promise.reject(new Error('STORAGE_OFFLINE'));
+    }
+
     return caches.delete(this.dbName);
   }
 
   public get(entryName: string) {
+    if (!this.useStorage) {
+      return Promise.reject(new Error('STORAGE_OFFLINE'));
+    }
+
     return this.timeoutOperation((cache) => cache.match('/' + entryName));
   }
 
   public save(entryName: string, response: Response) {
+    if (!this.useStorage) {
+      return Promise.reject(new Error('STORAGE_OFFLINE'));
+    }
+
     return this.timeoutOperation((cache) => cache.put('/' + entryName, response));
-  }
-
-  public getFile(fileName: string, method: 'blob' | 'json' | 'text' = 'blob'): Promise<Blob | JSON | string> {
-    return this.get(fileName).then((response) => {
-      if (!response) {
-        throw new Error('NO_ENTRY_FOUND');
-      }
-      return response[method]();
-    });
-  }
-
-  public saveFile(fileName: string, content: string | ArrayBuffer | Blob) {
-    const response = new Response(content);
-    return this.save(fileName, response);
   }
 
   private timeoutOperation<T>(callback: (cache: Cache) => Promise<T>) {
@@ -53,8 +55,10 @@ export default class CacheStorageController {
     }
 
     return new Promise<T>(async (resolve, reject) => {
+      let rejected = false;
       const timeout = setTimeout(() => {
-        reject(new Error('CACHESTORAGE TIMEOUT'));
+        reject();
+        rejected = true;
       }, 15000);
 
       try {
@@ -65,27 +69,13 @@ export default class CacheStorageController {
           throw new Error('No cache available');
         }
 
-        const result = await callback(cache);
-        resolve(result);
+        const res = await callback(cache);
+        if (!rejected) resolve(res);
       } catch (err) {
         reject(err);
-      } finally {
-        clearTimeout(timeout);
       }
+
+      clearTimeout(timeout);
     });
-  }
-
-  public static toggleStorage(enabled: boolean, clearWrite: boolean) {
-    return Promise.all(this.STORAGES.map((storage) => {
-      storage.useStorage = enabled;
-
-      if (!clearWrite) {
-        return;
-      }
-
-      if (!enabled) {
-        return storage.deleteAll();
-      }
-    }));
   }
 }

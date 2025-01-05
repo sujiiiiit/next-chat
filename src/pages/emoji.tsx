@@ -1,6 +1,6 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useMemo, use } from "react";
 import { IconB } from "@/components/ui/icon-b";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
@@ -9,39 +9,40 @@ import { regularCategories, frequentCategory } from "./emojiCategory";
 import Em from "@/pages/em";
 import { useScrollCategoryIntoView } from "@/hooks/useScrollCategoryIntoView";
 import { useActiveCategoryScrollDetection } from "@/hooks/useActiveCategoryScrollDetection";
+import { EmojiProvider, useEmojiContext } from "./EmojiContext";
 
-// Dynamic imports for external components
-const Player = dynamic(() =>
-  import("@lottiefiles/react-lottie-player").then((module) => ({
-    default: module.Player,
-  })),
+const Player = dynamic(
+  () =>
+    import("@lottiefiles/react-lottie-player").then((module) => ({
+      default: module.Player,
+    })),
   { ssr: false }
 );
 
-const EmojiPageComponent: React.FC = () => {
+const EmojiPageComponent: React.FC = React.memo(() => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeCategoryContainerRef = useRef<HTMLDivElement | null>(null);
+  const BodyRef = useRef<HTMLDivElement | null>(null);
+
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchVisible, setSearchVisible] = useState(true);
   const [navPosition, setNavPosition] = useState(false);
-  const BodyRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollToCategory = useScrollCategoryIntoView({
-    BodyRef: BodyRef,
-  });
+  const scrollToCategory = useScrollCategoryIntoView({ BodyRef });
 
-  const observer = useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
+  const { frequentEmojis } = useEmojiContext();
+  useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
     if (activeCategory !== newCategory) {
       setActiveCategory(newCategory);
-      if (activeCategory) {
-        const categoryElement = document.querySelector(
-          `.regularCategory-icon[data-active="true"]`
-        ) as HTMLElement;
-        if (categoryElement) {
-          scrollToCenter(activeCategoryContainerRef, categoryElement);
-        }
+      // if (activeCategory) {
+      const categoryElement = document.querySelector(
+        `.regularCategory-icon[data-active="true"]`
+      ) as HTMLElement;
+      if (categoryElement) {
+        scrollToCenter(activeCategoryContainerRef, categoryElement);
       }
+      // }
     }
   });
 
@@ -80,25 +81,21 @@ const EmojiPageComponent: React.FC = () => {
     }
   }, []);
 
-
-
-  const handleCategoryChangeonClick = useCallback(
-    (category: string) => {
-      observer?.disconnect();
-      setActiveCategory(category);
-      scrollToCategory(category);
-    },
-    [scrollToCategory,activeCategory]
-  );
-
-
-  const emojiSearchStyle = {
-    width: "1.75rem",
-    height: "1.75rem",
-    borderRadius: "50%",
-    cursor: "pointer",
-    padding: ".125rem",
+  const handleCategoryChangeonClick = (category: string) => {
+    // setActiveCategory(category);
+    scrollToCategory(category);
   };
+
+  const emojiSearchStyle = useMemo(
+    () => ({
+      width: "1.75rem",
+      height: "1.75rem",
+      borderRadius: "50%",
+      cursor: "pointer",
+      padding: ".125rem",
+    }),
+    []
+  );
 
   return (
     <div
@@ -120,8 +117,9 @@ const EmojiPageComponent: React.FC = () => {
                   <IconB
                     variant={"ghost"}
                     i={frequentCategory.i}
-                    className="bg-transparent data-[state=true]:bg-black/5 dark:data-[state=true]:bg-white/5 data-[state=true]:text-text1 mx-[0.3125rem]"
+                    className="bg-transparent transform origin-center mx-[0.3125rem]  data-[state=true]:bg-black/5 dark:data-[state=true]:bg-white/5 data-[state=true]:text-text1 data-[view=true]:flex hidden"
                     size={"emoji"}
+                    data-view={Object.keys(frequentEmojis).length > 0}
                     data-state={activeCategory === frequentCategory.u}
                     onClick={() =>
                       handleCategoryChangeonClick(frequentCategory.u)
@@ -154,7 +152,7 @@ const EmojiPageComponent: React.FC = () => {
                           variant="ghost"
                           size="emoji"
                           i={icon.i}
-                          className="regularCategory-icon data-[state=active]:scale-[0.8] data-[active=true]:text-text1 opacity-0 data-[name=regularSmileys]:opacity-100 data-[state=active]:opacity-100 duration-100"
+                          className="regularCategory-icon data-[state=active]:scale-[0.8] data-[active=true]:text-text1 "
                           data-state={
                             regularCategories.some(
                               (category) => category.u === activeCategory
@@ -173,8 +171,8 @@ const EmojiPageComponent: React.FC = () => {
               </div>
             </div>
             <div className="flex-1 p-0 relative">
-              <ScrollArea
-                className="emojiScroll-area h-[calc(26.25rem_-_3.0625rem)] layer-transition data-[state=true]:-translate-y-[3.0625rem] translate-y-0"
+              <div
+                className="emojiScroll-area overflow-hidden overflow-y-auto h-[calc(26.25rem_-_3.065rem)] pb-[3.065rem] layer-transition data-[state=true]:-translate-y-[3.0625rem] translate-y-0 scrollbar-none"
                 data-state={navPosition}
                 ref={BodyRef}
               >
@@ -265,17 +263,39 @@ const EmojiPageComponent: React.FC = () => {
                 <div>
                   <Em />
                 </div>
-              </ScrollArea>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <div className=" w-full h-[3.0625rem] min-h-[3.0625rem] flex items-center justify-center px-[0.3125rem] z-[4] bg-transparent border-t border-black/10">
+        {["smile", "stickers_face", "gifs"].map((icon) => (
+          <IconB
+            key={icon}
+            variant="ghost"
+            size="emoji"
+            i={icon}
+            className="data-[state=active]:bg-black/5 data-[state=active]:text-text1 mx-[0.75rem]"
+            // data-state="active"
+          />
+        ))}
+        <IconB
+          variant="ghost"
+          size="emoji"
+          i={"keyboard-remove"}
+          className="absolute right-0 mx-2"
+        />
+      </div>
     </div>
   );
-};
+});
 
-const EmojiPage: React.FC = () => {
-  return <EmojiPageComponent />;
-};
+const EmojiPage: React.FC = React.memo(() => {
+  return (
+    <EmojiProvider>
+      <EmojiPageComponent />
+    </EmojiProvider>
+  );
+});
 
 export default EmojiPage;

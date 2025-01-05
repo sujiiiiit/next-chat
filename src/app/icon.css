@@ -231,6 +231,10 @@
   content: "\e940";
 }
 
+.tgico-keyboard-remove:before {
+  content: "\e949";
+}
+
 .tgico-darkmode:before {
   content: "\e944";
 }
@@ -367,6 +371,9 @@
 }
 
 .tgico-gifs:before {
+  content: "\e968";
+}
+.tgico-gift2:before {
   content: "\e969";
 }
 
@@ -799,7 +806,7 @@
 }
 
 .tgico-stickers_face:before {
-  content: "\e90a";
+  content: "\ea04";
 }
 
 .tgico-stop:before {

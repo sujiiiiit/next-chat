@@ -1,6 +1,6 @@
 export type NullableElement = HTMLDivElement | null;
 export function useScrollCategoryIntoView({
-  BodyRef
+  BodyRef,
 }: {
   BodyRef: React.RefObject<HTMLDivElement | null>;
 }): (category: string) => void {
@@ -17,10 +17,12 @@ export function useScrollCategoryIntoView({
       return;
     }
 
-    $category.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
-    
+    // $category.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'start' })
+
+    const categoryTop = category=='frequentEmojis'?$category.offsetTop:$category.offsetTop+10;
+    // console.log("categoryTop", categoryTop);
+    BodyRef.current.scrollTo({ top: categoryTop, behavior: "smooth" });
+
+    // BodyRef.current.scrollTo({ top: top, behavior: "smooth" });
   };
 }
-
-
-
