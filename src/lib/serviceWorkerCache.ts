@@ -7,10 +7,10 @@ function isCorrectResponse(response: Response) {
   return response.ok && response.status === 200;
 }
 
-function timeoutRace<T extends Promise<any>>(promise: T) {
+function timeoutRace<T>(promise: Promise<T>): Promise<T> {
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(reject, 10000))
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
   ]);
 }
 

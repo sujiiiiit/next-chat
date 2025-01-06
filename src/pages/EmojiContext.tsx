@@ -1,5 +1,6 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 
+// Define the context and its properties
 interface EmojiContextProps {
   frequentEmojis: Record<string, number>;
   setFrequentEmojis: React.Dispatch<React.SetStateAction<Record<string, number>>>;
@@ -7,8 +8,9 @@ interface EmojiContextProps {
 
 const EmojiContext = createContext<EmojiContextProps | undefined>(undefined);
 
+// Define the EmojiProvider component
 interface EmojiProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const EmojiProvider: React.FC<EmojiProviderProps> = ({ children }) => {
@@ -21,6 +23,9 @@ export const EmojiProvider: React.FC<EmojiProviderProps> = ({ children }) => {
   );
 };
 
+export default EmojiProvider;
+
+// Define the useEmojiContext hook
 export const useEmojiContext = () => {
   const context = useContext(EmojiContext);
   if (!context) {

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useMemo, use } from "react";
+import React, { useCallback, useRef, useState, useMemo } from "react";
 import { IconB } from "@/components/ui/icon-b";
 // import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
@@ -7,9 +7,10 @@ import dynamic from "next/dynamic";
 import { scrollToCenter } from "@/lib/functions";
 import { regularCategories, frequentCategory } from "./emojiCategory";
 import Em from "@/pages/em";
+// import Em from "@/pages/EmojiSearch";
 import { useScrollCategoryIntoView } from "@/hooks/useScrollCategoryIntoView";
 import { useActiveCategoryScrollDetection } from "@/hooks/useActiveCategoryScrollDetection";
-import { EmojiProvider, useEmojiContext } from "./EmojiContext";
+import EmojiProvider, { useEmojiContext } from "./EmojiContext";
 
 const Player = dynamic(
   () =>
@@ -19,7 +20,7 @@ const Player = dynamic(
   { ssr: false }
 );
 
-const EmojiPageComponent: React.FC = React.memo(() => {
+const EmojiPageComponent: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeCategoryContainerRef = useRef<HTMLDivElement | null>(null);
@@ -35,14 +36,12 @@ const EmojiPageComponent: React.FC = React.memo(() => {
   useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
     if (activeCategory !== newCategory) {
       setActiveCategory(newCategory);
-      // if (activeCategory) {
       const categoryElement = document.querySelector(
         `.regularCategory-icon[data-active="true"]`
       ) as HTMLElement;
       if (categoryElement) {
         scrollToCenter(activeCategoryContainerRef, categoryElement);
       }
-      // }
     }
   });
 
@@ -82,7 +81,6 @@ const EmojiPageComponent: React.FC = React.memo(() => {
   }, []);
 
   const handleCategoryChangeonClick = (category: string) => {
-    // setActiveCategory(category);
     scrollToCategory(category);
   };
 
@@ -276,7 +274,6 @@ const EmojiPageComponent: React.FC = React.memo(() => {
             size="emoji"
             i={icon}
             className="data-[state=active]:bg-black/5 data-[state=active]:text-text1 mx-[0.75rem]"
-            // data-state="active"
           />
         ))}
         <IconB
@@ -288,14 +285,14 @@ const EmojiPageComponent: React.FC = React.memo(() => {
       </div>
     </div>
   );
-});
+};
 
-const EmojiPage: React.FC = React.memo(() => {
+const EmojiPage: React.FC = () => {
   return (
     <EmojiProvider>
       <EmojiPageComponent />
     </EmojiProvider>
   );
-});
+};
 
 export default EmojiPage;

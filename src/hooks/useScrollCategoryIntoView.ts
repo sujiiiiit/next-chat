@@ -21,7 +21,7 @@ export function useScrollCategoryIntoView({
 
     const categoryTop = category=='frequentEmojis'?$category.offsetTop:$category.offsetTop+10;
     // console.log("categoryTop", categoryTop);
-    BodyRef.current.scrollTo({ top: categoryTop, behavior: "smooth" });
+    BodyRef.current.scrollTo({ top: categoryTop});
 
     // BodyRef.current.scrollTo({ top: top, behavior: "smooth" });
   };

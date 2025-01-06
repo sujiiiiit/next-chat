@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useCallback, useState } from "react";
-import { signal, useSignal } from "@preact/signals-react";
+import { signal } from "@preact/signals-react";
 import lodash from "lodash";
 import rawEmojiData from "@/assets/regularEmoji.json";
 import { useToast } from "@/hooks/use-toast";
-import { useEmojiContext } from '@/pages/EmojiContext';
+import { useEmojiContext,EmojiProvider } from '@/pages/EmojiContext';
 
 import {
   ContextMenu,
@@ -241,7 +241,7 @@ const Em = () => {
                 <img
                   src={getEmojiImageUrl(emoji)}
                   alt={emoji.n}
-                  className="w-[34px] h-[34px] layer-transition opacity-0 data-[loaded=true]:opacity-100 aspect-square"
+                  className="w-[34px] h-[34px] layer-transition opacity-100 data-[loaded=true]:opacity-100 aspect-square"
                   width={34}
                   height={34}
                   loading="lazy"
@@ -261,4 +261,14 @@ const Em = () => {
   );
 };
 
-export default Em;
+const EmPage = () => {
+  return (
+    <EmojiProvider>
+        <Em />
+    </EmojiProvider>
+    
+    
+  );
+}
+
+export default EmPage;
