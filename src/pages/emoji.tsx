@@ -1,16 +1,13 @@
 import React, { useCallback, useRef, useState, useMemo } from "react";
 import { IconB } from "@/components/ui/icon-b";
-// import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { scrollToCenter } from "@/lib/functions";
 import { regularCategories, frequentCategory } from "./emojiCategory";
 import Em from "@/pages/em";
-// import Em from "@/pages/EmojiSearch";
 import { useScrollCategoryIntoView } from "@/hooks/useScrollCategoryIntoView";
 import { useActiveCategoryScrollDetection } from "@/hooks/useActiveCategoryScrollDetection";
-import EmojiProvider, { useEmojiContext } from "./EmojiContext";
 
 const Player = dynamic(
   () =>
@@ -29,10 +26,10 @@ const EmojiPageComponent: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchVisible, setSearchVisible] = useState(true);
   const [navPosition, setNavPosition] = useState(false);
+  const [frequentEmojis, setFrequentEmojis] = useState<Record<string, number>>({});
 
   const scrollToCategory = useScrollCategoryIntoView({ BodyRef });
 
-  const { frequentEmojis } = useEmojiContext();
   useActiveCategoryScrollDetection(BodyRef, (newCategory) => {
     if (activeCategory !== newCategory) {
       setActiveCategory(newCategory);
@@ -95,6 +92,12 @@ const EmojiPageComponent: React.FC = () => {
     []
   );
 
+  const handleFrequentEmojisUpdate = (
+    updatedFrequentEmojis: Record<string, number>
+  ) => {
+    setFrequentEmojis(updatedFrequentEmojis);
+  };
+
   return (
     <div
       className="emoji-dropdown flex flex-col w-[23.875rem] h-[26.25rem] bg-dropdown overflow-hidden flex-1 select-none absolute left-[0.8125rem] bottom-[5.125rem] max-w-[calc(100%-1rem)] max-h-[26.25rem] shadow-[0_5px_10px_5px_#10232f24] rounded-[1.25rem] transition-all scale-0 opacity-0 origin-[0_100%] backdrop-blur-[var(--dropdown-backdrop)] data-[state=active]:scale-100 data-[state=active]:opacity-100 z-10"
@@ -115,7 +118,7 @@ const EmojiPageComponent: React.FC = () => {
                   <IconB
                     variant={"ghost"}
                     i={frequentCategory.i}
-                    className="bg-transparent transform origin-center mx-[0.3125rem]  data-[state=true]:bg-black/5 dark:data-[state=true]:bg-white/5 data-[state=true]:text-text1 data-[view=true]:flex hidden"
+                    className="bg-transparent transform origin-center mx-[0.3125rem]  data-[state=true]:bg-black/5 dark:data-[state=true]:bg-white/5 data-[state=true]:text-text1 data-[view=false]:hidden"
                     size={"emoji"}
                     data-view={Object.keys(frequentEmojis).length > 0}
                     data-state={activeCategory === frequentCategory.u}
@@ -259,7 +262,7 @@ const EmojiPageComponent: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <Em />
+                  <Em onFrequentEmojisUpdate={handleFrequentEmojisUpdate} />
                 </div>
               </div>
             </div>
@@ -288,11 +291,7 @@ const EmojiPageComponent: React.FC = () => {
 };
 
 const EmojiPage: React.FC = () => {
-  return (
-    <EmojiProvider>
-      <EmojiPageComponent />
-    </EmojiProvider>
-  );
+  return <EmojiPageComponent />;
 };
 
 export default EmojiPage;

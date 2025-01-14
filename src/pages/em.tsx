@@ -1,10 +1,7 @@
 import React, { useEffect, useMemo, useCallback, useState } from "react";
-import { signal } from "@preact/signals-react";
 import lodash from "lodash";
 import rawEmojiData from "@/assets/regularEmoji.json";
 import { useToast } from "@/hooks/use-toast";
-import { useEmojiContext,EmojiProvider } from '@/pages/EmojiContext';
-
 import {
   ContextMenu,
   ContextMenuContent,
@@ -14,7 +11,9 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { regularCategories, frequentCategory } from "./emojiCategory";
 
-
+interface EmProps {
+  onFrequentEmojisUpdate: (frequentEmojis: Record<string, number>) => void;
+}
 
 // Ensure all 'c' properties are numbers
 const emojiData = rawEmojiData.map((emoji) => ({
@@ -36,17 +35,15 @@ const emojiDataMap = lodash.memoize((emojiData) => {
   );
 });
 
-// const imageLoaded = signal({});
-const imageQueue = signal([]);
-const processingQueue = signal(false);
-
-const Em = () => {
+const Em: React.FC<EmProps> = ({ onFrequentEmojisUpdate }) => {
   const { toast } = useToast();
   const [imageLoadingState, setImageLoadingState] = useState<{
     [key: string]: boolean;
   }>({});
 
-  const { frequentEmojis, setFrequentEmojis } = useEmojiContext();
+  const [frequentEmojis, setFrequentEmojis] = useState<Record<string, number>>(
+    {}
+  );
 
   // Filter and sort emojis based on categories
   const filteredEmojis = useMemo(
@@ -76,8 +73,9 @@ const Em = () => {
   const saveFrequentEmojis = useCallback(
     lodash.debounce((frequentEmojis) => {
       localStorage.setItem(frequentCategory.u, JSON.stringify(frequentEmojis));
+      onFrequentEmojisUpdate(frequentEmojis);
     }, 1000),
-    []
+    [onFrequentEmojisUpdate]
   );
 
   useEffect(() => {
@@ -91,12 +89,12 @@ const Em = () => {
         description: JSON.stringify(emoji, null, 2),
       });
 
-      setFrequentEmojis({
-        ...frequentEmojis,
-        [emoji.u]: (frequentEmojis[emoji.u] || 0) + 1,
-      });
+      setFrequentEmojis((prevFrequentEmojis) => ({
+        ...prevFrequentEmojis,
+        [emoji.u]: (prevFrequentEmojis[emoji.u] || 0) + 1,
+      }));
     },
-    [toast, frequentEmojis, setFrequentEmojis]
+    [toast]
   );
 
   const handleCopyEmoji = (emoji: { u: string; n: string }) => {
@@ -123,34 +121,6 @@ const Em = () => {
       [unified]: true,
     }));
   };
-
-  const processImageQueue = useCallback(() => {
-    if (processingQueue.value || imageQueue.value.length === 0) return;
-    processingQueue.value = true;
-
-    const chunkSize = 10; // Process 10 images at a time
-    const chunk = imageQueue.value.slice(0, chunkSize);
-    imageQueue.value = imageQueue.value.slice(chunkSize);
-
-    chunk.forEach((emoji: { u: string }) => {
-      const img = new Image();
-      img.src = getEmojiImageUrl(emoji);
-      img.onload = () => handleImageLoad(emoji.u);
-    });
-
-    processingQueue.value = false;
-
-    // Continue processing if there are more images in the queue
-    if (imageQueue.value.length > 0) {
-      requestAnimationFrame(processImageQueue);
-    }
-  }, [getEmojiImageUrl]);
-
-  useEffect(() => {
-    if (imageQueue.value.length > 0 && !processingQueue.value) {
-      processImageQueue();
-    }
-  }, [imageQueue.value, processingQueue.value, processImageQueue]);
 
   return (
     <div>
@@ -261,14 +231,4 @@ const Em = () => {
   );
 };
 
-const EmPage = () => {
-  return (
-    <EmojiProvider>
-        <Em />
-    </EmojiProvider>
-    
-    
-  );
-}
-
-export default EmPage;
+export default Em;
